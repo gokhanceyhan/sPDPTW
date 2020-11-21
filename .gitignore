@@ -24,3 +24,8 @@ hs_err_pid*
 
 # ide file
 .idea/
+
+# miscellaneous
+*.DS_Store
+*.iml
+*/target/
