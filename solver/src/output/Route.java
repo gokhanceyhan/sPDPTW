@@ -9,6 +9,7 @@ import java.util.*;
 
 public class Route {
 
+    private double cost;
     private double distanceTravelled;
     private Driver driver;
     private Map<Integer, Double> lateDeliveredOrderId2delay;
@@ -24,6 +25,14 @@ public class Route {
         this.tasks = tasks;
         registerTasks();
         schedule();
+    }
+
+    public double getCost() {
+        return cost;
+    }
+
+    public void setCost(double cost) {
+        this.cost = cost;
     }
 
     public double getDistanceTravelled() {
@@ -96,6 +105,11 @@ public class Route {
 
     public void setTravelTime(double travelTime) {
         this.travelTime = travelTime;
+    }
+
+    private void evaluate(RouteCostFunction costFunction){
+        double cost = costFunction.calculateCost(this);
+        this.setCost(cost);
     }
 
     private void registerTasks() throws InfeasibleRouteException {
