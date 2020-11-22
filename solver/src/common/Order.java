@@ -7,8 +7,8 @@ public class Order {
     private Task pickup;
 
     public Order() {
-        this.delivery = new Task();
-        this.pickup = new Task();
+        this.delivery = new Task(TaskType.DELIVERY);
+        this.pickup = new Task(TaskType.PICKUP);
     }
 
     public Order(Task delivery, int id, Task pickup) {
@@ -31,6 +31,8 @@ public class Order {
 
     public void setId(int id) {
         this.id = id;
+        this.getDelivery().setOrderId(id);
+        this.getPickup().setOrderId(id);
     }
 
     public Task getPickup() {

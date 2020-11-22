@@ -13,6 +13,11 @@ public class Location {
         this.longitude = longitude;
     }
 
+    public Location(Location that) {
+        this.latitude = that.getLatitude();
+        this.longitude = that.getLongitude();
+    }
+
     public double getLatitude() {
         return latitude;
     }

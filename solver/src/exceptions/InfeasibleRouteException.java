@@ -1,13 +1,12 @@
 package exceptions;
 
 /**
- * This exception is thrown when no solution can be found for the given input
- * data.
+ * This exception is thrown when a route is infeasible.
  *
  * @author gokhanceyhan
  *
  */
-public class NoSolutionException extends Exception {
+public class InfeasibleRouteException extends Exception {
 
     private static final long serialVersionUID = 1L;
 
@@ -15,8 +14,7 @@ public class NoSolutionException extends Exception {
      * @param s
      *            Exception message.
      */
-    public NoSolutionException(String s) {
+    public InfeasibleRouteException(String s) {
         super(s);
     }
-
 }

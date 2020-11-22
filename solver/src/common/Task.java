@@ -2,25 +2,33 @@ package common;
 
 public class Task {
 
+    public static final int SERVICE_TIME_IN_SECONDS = 0;
+
     private Location location;
     private int numItems;
-    private int timeWindowEnd;
-    private int timeWindowStart;
+    private int orderId;
+    private TimeWindow timeWindow;
+    private TaskType type;
 
-    public Task() {
+    public Task(TaskType type) {
         this.location = new Location();
+        this.type = type;
+        this.timeWindow = new TimeWindow();
     }
 
-    public Task(Location location, int numItems) {
+    public Task(Location location, int numItems, int orderId, TaskType type) {
         this.location = location;
         this.numItems = numItems;
+        this.orderId = orderId;
+        this.type = type;
     }
 
-    public Task(Location location, int numItems, int timeWindowEnd, int timeWindowStart) {
+    public Task(Location location, int numItems, int orderId, TimeWindow timeWindow, TaskType type) {
         this.location = location;
         this.numItems = numItems;
-        this.timeWindowEnd = timeWindowEnd;
-        this.timeWindowStart = timeWindowStart;
+        this.orderId = orderId;
+        this.timeWindow = timeWindow;
+        this.type = type;
     }
 
     public Location getLocation() {
@@ -39,19 +47,27 @@ public class Task {
         this.numItems = numItems;
     }
 
-    public int getTimeWindowEnd() {
-        return timeWindowEnd;
+    public int getOrderId() {
+        return orderId;
     }
 
-    public void setTimeWindowEnd(int timeWindowEnd) {
-        this.timeWindowEnd = timeWindowEnd;
+    public void setOrderId(int orderId) {
+        this.orderId = orderId;
     }
 
-    public int getTimeWindowStart() {
-        return timeWindowStart;
+    public TimeWindow getTimeWindow() {
+        return timeWindow;
     }
 
-    public void setTimeWindowStart(int timeWindowStart) {
-        this.timeWindowStart = timeWindowStart;
+    public void setTimeWindow(TimeWindow timeWindow) {
+        this.timeWindow = timeWindow;
+    }
+
+    public TaskType getType() {
+        return type;
+    }
+
+    public void setType(TaskType type) {
+        this.type = type;
     }
 }

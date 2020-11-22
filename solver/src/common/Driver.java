@@ -2,35 +2,34 @@ package common;
 
 public class Driver {
 
+    public static final double AVERAGE_SPEED_IN_KM_PER_HOUR = 15;
+
     private int capacity;
     private Location endLocation;
     private int id;
     private Location startLocation;
-    private int timeWindowEnd;
-    private int timeWindowStart;
+    private TimeWindow timeWindow;
 
     public Driver() {
         this.endLocation = new Location();
         this.startLocation = new Location();
+        this.timeWindow = new TimeWindow();
     }
 
-    public Driver(int capacity, int id, Location startLocation, int timeWindowEnd, int timeWindowStart) {
+    public Driver(int capacity, int id, Location startLocation, TimeWindow timeWindow) {
         this.capacity = capacity;
         this.id = id;
         this.startLocation = startLocation;
-        this.timeWindowEnd = timeWindowEnd;
-        this.timeWindowStart = timeWindowStart;
+        this.timeWindow = timeWindow;
     }
 
     public Driver(
-            int capacity, Location endLocation, int id, Location startLocation, int timeWindowEnd,
-            int timeWindowStart) {
+            int capacity, Location endLocation, int id, Location startLocation, TimeWindow timeWindow) {
         this.capacity = capacity;
         this.endLocation = endLocation;
         this.id = id;
         this.startLocation = startLocation;
-        this.timeWindowEnd = timeWindowEnd;
-        this.timeWindowStart = timeWindowStart;
+        this.timeWindow = timeWindow;
     }
 
     public int getCapacity() {
@@ -65,19 +64,11 @@ public class Driver {
         this.startLocation = startLocation;
     }
 
-    public int getTimeWindowEnd() {
-        return timeWindowEnd;
+    public TimeWindow getTimeWindow() {
+        return timeWindow;
     }
 
-    public void setTimeWindowEnd(int timeWindowEnd) {
-        this.timeWindowEnd = timeWindowEnd;
-    }
-
-    public int getTimeWindowStart() {
-        return timeWindowStart;
-    }
-
-    public void setTimeWindowStart(int timeWindowStart) {
-        this.timeWindowStart = timeWindowStart;
+    public void setTimeWindow(TimeWindow timeWindow) {
+        this.timeWindow = timeWindow;
     }
 }

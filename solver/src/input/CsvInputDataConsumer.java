@@ -78,11 +78,11 @@ public class CsvInputDataConsumer implements InputDataConsumer {
                     break;
                 case DRIVER_TIME_WINDOW_START_HEADER:
                     int timeWindowStart = Integer.parseInt(driverData[i]);
-                    driver.setTimeWindowStart(timeWindowStart);
+                    driver.getTimeWindow().setStart(timeWindowStart);
                     break;
                 case DRIVER_TIME_WINDOW_END_HEADER:
                     int timeWindowEnd = Integer.parseInt(driverData[i]);
-                    driver.setTimeWindowEnd(timeWindowEnd);
+                    driver.getTimeWindow().setEnd(timeWindowEnd);
                     break;
                 case DRIVER_START_LOCATION_LAT_HEADER:
                     double startLocationLatitude = Double.parseDouble(driverData[i]);
@@ -139,11 +139,11 @@ public class CsvInputDataConsumer implements InputDataConsumer {
                     break;
                 case ORDER_PICKUP_TIME_WINDOW_START_HEADER:
                     int timeWindowStart = Integer.parseInt(orderData[i]);
-                    order.getPickup().setTimeWindowStart(timeWindowStart);
+                    order.getPickup().getTimeWindow().setStart(timeWindowStart);
                     break;
                 case ORDER_DELIVERY_TIME_WINDOW_END_HEADER:
                     int timeWindowEnd = Integer.parseInt(orderData[i]);
-                    order.getDelivery().setTimeWindowEnd(timeWindowEnd);
+                    order.getDelivery().getTimeWindow().setEnd(timeWindowEnd);
                     break;
                 default:
                     throw new InvalidInputException(String.format("Unknown order data file header %s", header));
