@@ -23,6 +23,7 @@ import org.apache.commons.cli.ParseException;
 
 import exceptions.InvalidInputException;
 import exceptions.NoSolutionException;
+import output.Route;
 
 /**
  * @author gokhanceyhan
@@ -55,7 +56,6 @@ public class Main {
 
         /* Read input data */
         Instance instance = createInstance(inputPath, driverFileName, orderFileName);
-
 
 
         System.out.println("Done!");
