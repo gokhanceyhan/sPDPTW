@@ -1,6 +1,6 @@
 package exceptions;
 
-public class UnservicableOrderException extends Exception {
+public class UnserviceableOrderException extends Exception {
 
     private static final long serialVersionUID = 1L;
 
@@ -8,7 +8,7 @@ public class UnservicableOrderException extends Exception {
      * @param s
      *            Exception message.
      */
-    public UnservicableOrderException(String s) {
+    public UnserviceableOrderException(String s) {
         super(s);
     }
 }

@@ -8,10 +8,11 @@ import java.io.IOException;
 import java.util.List;
 
 import algorithms.GreedyConstructionHeuristic;
+import algorithms.RegretBasedConstructionHeuristic;
 import common.Driver;
 import common.Order;
 import common.RouteCostFunction;
-import exceptions.UnservicableOrderException;
+import exceptions.UnserviceableOrderException;
 import input.CsvInputDataConsumer;
 import input.InputDataConsumer;
 import input.Instance;
@@ -68,8 +69,17 @@ public class Main {
         /* Create a simple solution by the greedy insertion heuristic */
         try {
             Solution solution = new GreedyConstructionHeuristic(routeCostFunction).run(instance);
-            System.out.println(String.format("Found a solution with cost: %.2f", solution.getCost()));
-        } catch (UnservicableOrderException e) {
+            System.out.println(String.format("GCH found a solution with cost: %.2f", solution.getCost()));
+        } catch (UnserviceableOrderException e) {
+            e.printStackTrace();
+        }
+
+        /* Create a simple solution by the regret-based insertion heuristic */
+        int regretHorizon = 1;
+        try {
+            Solution solution = new RegretBasedConstructionHeuristic(routeCostFunction, regretHorizon).run(instance);
+            System.out.println(String.format("RBC found a solution with cost: %.2f", solution.getCost()));
+        } catch (UnserviceableOrderException e) {
             e.printStackTrace();
         }
 

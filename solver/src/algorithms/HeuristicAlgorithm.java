@@ -1,10 +1,10 @@
 package algorithms;
 
-import exceptions.UnservicableOrderException;
+import exceptions.UnserviceableOrderException;
 import input.Instance;
 import output.Solution;
 
 public interface HeuristicAlgorithm {
 
-    Solution run(Instance instance) throws UnservicableOrderException;
+    Solution run(Instance instance) throws UnserviceableOrderException;
 }

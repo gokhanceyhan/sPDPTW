@@ -4,8 +4,7 @@ import common.Driver;
 import common.Order;
 import common.OrderIdAndDriverId;
 import common.RouteCostFunction;
-import exceptions.InfeasibleRouteException;
-import exceptions.UnservicableOrderException;
+import exceptions.UnserviceableOrderException;
 import input.Instance;
 import output.Route;
 import output.Solution;
@@ -30,8 +29,7 @@ public class GreedyConstructionHeuristic implements HeuristicAlgorithm {
     }
 
     @Override
-    public Solution run(Instance instance) throws UnservicableOrderException {
-
+    public Solution run(Instance instance) throws UnserviceableOrderException {
 
         Map<Integer, Order> orderId2order = instance.getOrders().stream().collect(
                 Collectors.toMap(Order::getId, order -> order));
@@ -52,10 +50,8 @@ public class GreedyConstructionHeuristic implements HeuristicAlgorithm {
             int assignedDriverId = orderInsertionImpact.getOrderInsertion().getDriverId();
             this.getSolution().updateRoute(assignedDriverId, orderInsertionImpact.getRoute());
             updateOrderInsertionImpacts(orderId2order, orderInsertionImpact.getOrderInsertion());
-
             pendingOrders.remove(orderId2order.get(nextOrderId));
         }
-
 
         this.getSolution().evaluate();
         return getSolution();
@@ -65,8 +61,7 @@ public class GreedyConstructionHeuristic implements HeuristicAlgorithm {
         assert orderId2bestOrderInsertionImpact.size() > 1;
         int bestOrderId = -1;
         double minCostDelta = Double.POSITIVE_INFINITY;
-        for (Map.Entry<Integer, OrderInsertionImpact> entry:
-                orderId2bestOrderInsertionImpact.entrySet()){
+        for (Map.Entry<Integer, OrderInsertionImpact> entry: orderId2bestOrderInsertionImpact.entrySet()){
             if (entry.getValue().getCostDelta() < minCostDelta){
                 bestOrderId = entry.getKey();
                 minCostDelta = entry.getValue().getCostDelta();
@@ -76,7 +71,7 @@ public class GreedyConstructionHeuristic implements HeuristicAlgorithm {
         return bestOrderId;
     }
 
-    private int findBestDriver(Order order) throws UnservicableOrderException {
+    private int findBestDriver(Order order) throws UnserviceableOrderException {
         int bestDriverId = -1;
         double minCostDelta = Double.POSITIVE_INFINITY;
         for (Map.Entry<OrderIdAndDriverId, OrderInsertionImpact> entry:
@@ -90,7 +85,7 @@ public class GreedyConstructionHeuristic implements HeuristicAlgorithm {
             }
         }
         if (bestDriverId == -1)
-            throw new UnservicableOrderException(String.format("Cannot assign the order %d", order.getId()));
+            throw new UnserviceableOrderException(String.format("Cannot assign the order %d", order.getId()));
         return bestDriverId;
     }
 
