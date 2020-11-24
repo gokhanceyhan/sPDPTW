@@ -14,10 +14,16 @@ public class Solution {
 
     public Solution() {
         this.driverId2route = new HashMap<>();
+        this.evaluate();
     }
 
     public Solution(Map<Integer, Route> driverId2route) {
         this.driverId2route = driverId2route;
+    }
+
+    public Solution (Solution solution){
+        this.cost = solution.getCost();
+        this.driverId2route = new HashMap<>(solution.getDriverId2route());
     }
 
     public double getCost() {

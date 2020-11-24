@@ -5,6 +5,6 @@ import output.Solution;
 
 public interface LocalSearch {
 
-    Solution run (Instance instance, Solution initial);
+    Solution run (Instance instance, Solution initialSolution);
 
 }

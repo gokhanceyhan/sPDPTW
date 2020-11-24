@@ -5,10 +5,9 @@ package main;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
-import algorithms.GreedyInsertionHeuristic;
+import algorithms.GreedyConstructionHeuristic;
 import common.Driver;
 import common.Order;
 import common.RouteCostFunction;
@@ -26,7 +25,6 @@ import org.apache.commons.cli.ParseException;
 
 import exceptions.InvalidInputException;
 import exceptions.NoSolutionException;
-import output.Route;
 import output.Solution;
 
 /**
@@ -69,8 +67,8 @@ public class Main {
 
         /* Create a simple solution by the greedy insertion heuristic */
         try {
-            Solution solution = new GreedyInsertionHeuristic(routeCostFunction).run(instance);
-            System.out.println("Found a solution!");
+            Solution solution = new GreedyConstructionHeuristic(routeCostFunction).run(instance);
+            System.out.println(String.format("Found a solution with cost: %.2f", solution.getCost()));
         } catch (UnservicableOrderException e) {
             e.printStackTrace();
         }

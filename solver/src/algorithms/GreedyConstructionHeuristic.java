@@ -17,13 +17,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class GreedyInsertionHeuristic implements HeuristicAlgorithm {
+public class GreedyConstructionHeuristic implements HeuristicAlgorithm {
 
     private Map<OrderIdAndDriverId, OrderInsertionImpact> orderIdAndDriverId2orderInsertionImpact;
     private RouteCostFunction routeCostFunction;
     private Solution solution;
 
-    public GreedyInsertionHeuristic(RouteCostFunction routeCostFunction) {
+    public GreedyConstructionHeuristic(RouteCostFunction routeCostFunction) {
         this.orderIdAndDriverId2orderInsertionImpact = new HashMap<>();
         this.routeCostFunction = routeCostFunction;
         this.solution = new Solution();
@@ -32,27 +32,55 @@ public class GreedyInsertionHeuristic implements HeuristicAlgorithm {
     @Override
     public Solution run(Instance instance) throws UnservicableOrderException {
 
-        initializeOrderInsertionImpacts(instance.getOrders(), instance.getDrivers());
+
         Map<Integer, Order> orderId2order = instance.getOrders().stream().collect(
                 Collectors.toMap(Order::getId, order -> order));
+        initializeOrderInsertionImpacts(instance.getOrders(), instance.getDrivers());
 
-        for (Order order : instance.getOrders()){
-            int driverId = findBestDriver(order);
-            OrderIdAndDriverId orderIdAndDriverId = new OrderIdAndDriverId(driverId, order.getId());
-            OrderInsertionImpact orderInsertionImpact = this.getOrderIdAndDriverId2orderInsertionImpact().get(
-                    orderIdAndDriverId);
-            this.getSolution().updateRoute(driverId, orderInsertionImpact.getRoute());
+        List<Order> pendingOrders = new ArrayList<>(instance.getOrders());
+        while (pendingOrders.size() > 0){
+            Map<Integer, OrderInsertionImpact> orderId2bestOrderInsertionImpact = new HashMap<>();
+            for (Order order : pendingOrders){
+                int driverId = findBestDriver(order);
+                OrderIdAndDriverId orderIdAndDriverId = new OrderIdAndDriverId(driverId, order.getId());
+                OrderInsertionImpact orderInsertionImpact = this.getOrderIdAndDriverId2orderInsertionImpact().get(
+                        orderIdAndDriverId);
+                orderId2bestOrderInsertionImpact.put(order.getId(), orderInsertionImpact);
+            }
+            int nextOrderId = findBestOrder(orderId2bestOrderInsertionImpact);
+            OrderInsertionImpact orderInsertionImpact = orderId2bestOrderInsertionImpact.get(nextOrderId);
+            int assignedDriverId = orderInsertionImpact.getOrderInsertion().getDriverId();
+            this.getSolution().updateRoute(assignedDriverId, orderInsertionImpact.getRoute());
             updateOrderInsertionImpacts(orderId2order, orderInsertionImpact.getOrderInsertion());
+
+            pendingOrders.remove(orderId2order.get(nextOrderId));
         }
+
+
         this.getSolution().evaluate();
         return getSolution();
+    }
+
+    private int findBestOrder(Map<Integer, OrderInsertionImpact> orderId2bestOrderInsertionImpact){
+        assert orderId2bestOrderInsertionImpact.size() > 1;
+        int bestOrderId = -1;
+        double minCostDelta = Double.POSITIVE_INFINITY;
+        for (Map.Entry<Integer, OrderInsertionImpact> entry:
+                orderId2bestOrderInsertionImpact.entrySet()){
+            if (entry.getValue().getCostDelta() < minCostDelta){
+                bestOrderId = entry.getKey();
+                minCostDelta = entry.getValue().getCostDelta();
+            }
+        }
+        assert bestOrderId != 1;
+        return bestOrderId;
     }
 
     private int findBestDriver(Order order) throws UnservicableOrderException {
         int bestDriverId = -1;
         double minCostDelta = Double.POSITIVE_INFINITY;
         for (Map.Entry<OrderIdAndDriverId, OrderInsertionImpact> entry:
-                this.orderIdAndDriverId2orderInsertionImpact.entrySet()){
+                this.getOrderIdAndDriverId2orderInsertionImpact().entrySet()){
             int orderId = entry.getKey().getOrderId();
             if (orderId != order.getId())
                 continue;
