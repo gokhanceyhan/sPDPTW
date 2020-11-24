@@ -24,6 +24,19 @@ public class Route {
     private List<Task> tasks;
     private double travelTime;
 
+    public Route(Driver driver) {
+        this.cumulativeDistances = new ArrayList<>();
+        this.cumulativeTravelTimes = new ArrayList<>();
+        this.driver = driver;
+        this.lateDeliveredOrderId2delay = new HashMap<>();
+        this.driverLoads = new ArrayList<>();
+        this.orderId2deliveryTaskIndex = new HashMap<>();
+        this.orderId2pickupTaskIndex = new HashMap<>();
+        this.orderIds = new ArrayList<>();
+        this.taskCompletionTimes = new ArrayList<>();
+        this.tasks = new LinkedList<>();
+    }
+
     public Route(Driver driver, List<Task> tasks) throws InfeasibleRouteException {
         this.driver = driver;
         this.tasks = tasks;
@@ -43,7 +56,7 @@ public class Route {
         this.orderId2pickupTaskIndex = new HashMap<>(route.getOrderId2pickupTaskIndex());
         this.orderIds = new ArrayList<>(route.getOrderIds());
         this.taskCompletionTimes = new ArrayList<>(route.getTaskCompletionTimes());
-        this.tasks = new ArrayList<>(route.getTasks());
+        this.tasks = new LinkedList<>(route.getTasks());
         this.travelTime = route.getTravelTime();
     }
 

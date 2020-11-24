@@ -4,17 +4,20 @@ import common.Order;
 import exceptions.InfeasibleSolutionException;
 import input.Instance;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class Solution {
 
     private double cost;
-    private List<Route> routes;
+    private Map<Integer, Route> driverId2route;
 
-    public Solution(List<Route> routes) {
-        this.routes = routes;
+    public Solution() {
+        this.driverId2route = new HashMap<>();
+    }
+
+    public Solution(Map<Integer, Route> driverId2route) {
+        this.driverId2route = driverId2route;
     }
 
     public double getCost() {
@@ -25,22 +28,27 @@ public class Solution {
         this.cost = cost;
     }
 
-    public List<Route> getRoutes() {
-        return routes;
+    public Map<Integer, Route> getDriverId2route() {
+        return driverId2route;
     }
 
-    public void setRoutes(List<Route> routes) {
-        this.routes = routes;
+    public void setDriverId2route(Map<Integer, Route> driverId2route) {
+        this.driverId2route = driverId2route;
     }
 
-    private void evaluate(){
-        double cost = this.getRoutes().stream().map(Route::getCost).reduce(0.0, Double:: sum);
+    public void updateRoute(int driverId, Route route){
+        this.getDriverId2route().put(driverId, route);
+    }
+
+    public void evaluate(){
+        double initialCost = 0.0;
+        double cost = this.getDriverId2route().values().stream().map(Route::getCost).reduce(initialCost, Double:: sum);
         this.setCost(cost);
     }
 
     private void validate(Instance instance) throws InfeasibleSolutionException {
         List<Integer> assignedOrderIds = new ArrayList<>();
-        for (Route route: this.getRoutes()) {
+        for (Route route: this.getDriverId2route().values()) {
             for (Integer orderId: route.getOrderIds()) {
                 if (assignedOrderIds.contains(orderId))
                     throw new InfeasibleSolutionException(

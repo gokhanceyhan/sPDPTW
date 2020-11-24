@@ -8,8 +8,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import algorithms.GreedyInsertionHeuristic;
 import common.Driver;
 import common.Order;
+import common.RouteCostFunction;
+import exceptions.UnservicableOrderException;
 import input.CsvInputDataConsumer;
 import input.InputDataConsumer;
 import input.Instance;
@@ -24,6 +27,7 @@ import org.apache.commons.cli.ParseException;
 import exceptions.InvalidInputException;
 import exceptions.NoSolutionException;
 import output.Route;
+import output.Solution;
 
 /**
  * @author gokhanceyhan
@@ -56,6 +60,20 @@ public class Main {
 
         /* Read input data */
         Instance instance = createInstance(inputPath, driverFileName, orderFileName);
+
+        /* Create the cost function */
+        RouteCostFunction routeCostFunction = new RouteCostFunction(
+                1.0, 1000000, 1000,
+                1.0
+        );
+
+        /* Create a simple solution by the greedy insertion heuristic */
+        try {
+            Solution solution = new GreedyInsertionHeuristic(routeCostFunction).run(instance);
+            System.out.println("Found a solution!");
+        } catch (UnservicableOrderException e) {
+            e.printStackTrace();
+        }
 
 
         System.out.println("Done!");
@@ -92,7 +110,7 @@ public class Main {
      * @param inputPath
      * @param driverFileName
      * @param orderFileName
-     * @return
+     * @return <code>Instance </code> object
      * @throws InvalidInputException
      */
     private static Instance createInstance(String inputPath, String driverFileName, String orderFileName) throws

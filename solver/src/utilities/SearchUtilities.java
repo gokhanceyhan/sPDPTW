@@ -1,6 +1,7 @@
 package utilities;
 
 import algorithms.OrderInsertion;
+import algorithms.OrderInsertionImpact;
 import common.*;
 import exceptions.InfeasibleRouteException;
 import output.Route;
@@ -9,46 +10,44 @@ import java.util.*;
 
 public class SearchUtilities {
 
-    public static double costOfOrderInsertion(
+    public static Route insertOrder(
             Route initialRoute, Order order, OrderInsertion orderInsertion, RouteCostFunction costFunction) throws
             InfeasibleRouteException {
         Route route = new Route(initialRoute);
         route.insert(order, orderInsertion, costFunction);
-        return route.getCost();
+        return route;
     }
 
-    public static OrderInsertion findBestOrderInsertion(
+    public static OrderInsertionImpact findBestOrderInsertion(
             Route route, Order order, RouteCostFunction costFunction){
         int numTasks = route.getTasks().size();
-        double currentCost = route.getCost();
         double minCostDelta = Double.POSITIVE_INFINITY;
-        OrderInsertion bestOrderInsertion = new OrderInsertion(
-                numTasks + 1, route.getDriver().getId(), order.getId(), numTasks);
+        OrderInsertion bestOrderInsertion = null;
+        Route bestRoute = null;
         for (int pickUpIndex = 0; pickUpIndex < numTasks + 1; pickUpIndex++) {
             for (int deliveryIndex = pickUpIndex + 1; deliveryIndex < numTasks + 2; deliveryIndex++) {
                 OrderInsertion orderInsertion = new OrderInsertion(
                         deliveryIndex, route.getDriver().getId(), order.getId(), pickUpIndex);
-                double cost;
+                Route newRoute;
                 try {
-                    cost = costOfOrderInsertion(route, order, orderInsertion, costFunction);
+                    newRoute = insertOrder(route, order, orderInsertion, costFunction);
                 } catch (InfeasibleRouteException e) {
                     continue;
                 }
-                double costDelta = cost - currentCost;
+                double costDelta = newRoute.getCost() - route.getCost();
                 if (costDelta < minCostDelta){
                     minCostDelta = costDelta;
                     bestOrderInsertion = orderInsertion;
+                    bestRoute = newRoute;
                 }
             }
         }
-        return bestOrderInsertion;
+        return new OrderInsertionImpact(minCostDelta, bestOrderInsertion, bestRoute);
     }
 
     public static boolean isCapacitySufficient(List<Integer> driverLoads, int numItems, int capacity){
         int maxLoad = Collections.max(driverLoads);
-        if (maxLoad + numItems > capacity)
-            return false;
-        return true;
+        return maxLoad + numItems <= capacity;
     }
 
 }
