@@ -14,7 +14,8 @@ public class SearchUtilities {
             Route initialRoute, Order order, OrderInsertion orderInsertion, RouteCostFunction costFunction) throws
             InfeasibleRouteException {
         Route route = new Route(initialRoute);
-        route.insert(order, orderInsertion, costFunction);
+        route.insert(order, orderInsertion);
+        route.evaluate(costFunction);
         return route;
     }
 

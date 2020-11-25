@@ -164,7 +164,7 @@ public class Route {
         this.travelTime = travelTime;
     }
 
-    private void evaluate(RouteCostFunction costFunction){
+    public void evaluate(RouteCostFunction costFunction){
         double cost = costFunction.calculateCost(this);
         this.setCost(cost);
     }
@@ -243,12 +243,22 @@ public class Route {
         this.setLateDeliveredOrderId2delay(lateDeliveredOrderId2delay);
     }
 
-    public void insert(Order order, OrderInsertion orderInsertion, RouteCostFunction costFunction) throws
+    public void insert(Order order, OrderInsertion orderInsertion) throws
             InfeasibleRouteException {
         this.getTasks().add(orderInsertion.getPickUpTaskIndex(), order.getPickup());
         this.getTasks().add(orderInsertion.getDeliveryTaskIndex(), order.getDelivery());
         this.registerTasks();
         this.schedule();
-        this.evaluate(costFunction);
+    }
+
+    public void remove(int orderId) throws InfeasibleRouteException {
+        int pickUpTaskIndex = this.getOrderId2pickupTaskIndex().get(orderId);
+        int deliveryTaskIndex = this.getOrderId2deliveryTaskIndex().get(orderId);
+        this.getTasks().remove(pickUpTaskIndex);
+        // adjust the delivery task index
+        deliveryTaskIndex--;
+        this.getTasks().remove(deliveryTaskIndex);
+        this.registerTasks();
+        this.schedule();
     }
 }
