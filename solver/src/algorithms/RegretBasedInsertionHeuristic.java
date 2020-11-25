@@ -12,24 +12,28 @@ import utilities.SearchUtilities;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class RegretBasedConstructionHeuristic implements HeuristicAlgorithm {
+public class RegretBasedInsertionHeuristic implements InsertionHeuristic {
 
     // Each order insertion impact represents the best insertion to the route of a different driver
+    private Instance instance;
     private Map<Integer, List<OrderInsertionImpact>> orderId2orderInsertionImpacts;
     private int regretHorizon;
     private RouteCostFunction routeCostFunction;
-    private Solution solution;
+    private PartialSolution partialSolution;
 
-    public RegretBasedConstructionHeuristic(RouteCostFunction routeCostFunction, int regretHorizon) {
+    public RegretBasedInsertionHeuristic(Instance instance, RouteCostFunction routeCostFunction, int regretHorizon) {
+        this.instance = instance;
         this.orderId2orderInsertionImpacts = new HashMap<>();
         assert regretHorizon > 0;
         this.regretHorizon = regretHorizon;
         this.routeCostFunction = routeCostFunction;
-        this.solution = new Solution();
     }
 
     @Override
-    public Solution run(Instance instance) throws UnserviceableOrderException {
+    public Solution run(PartialSolution partialSolution) throws UnserviceableOrderException {
+
+        this.setPartialSolution(new PartialSolution(partialSolution));
+
         Map<Integer, Order> orderId2order = instance.getOrders().stream().collect(
                 Collectors.toMap(Order::getId, order -> order));
         initializeOrderInsertionImpacts(instance.getOrders(), instance.getDrivers());
@@ -46,14 +50,14 @@ public class RegretBasedConstructionHeuristic implements HeuristicAlgorithm {
             OrderInsertionImpact bestOrderInsertionImpact = findBestOrderInsertionImpact(
                     nextOrderId, this.getOrderId2orderInsertionImpacts().get(nextOrderId));
             int assignedDriverId = bestOrderInsertionImpact.getOrderInsertion().getDriverId();
-            this.getSolution().updateRoute(assignedDriverId, bestOrderInsertionImpact.getRoute());
+            this.getPartialSolution().updateRoute(assignedDriverId, bestOrderInsertionImpact.getRoute());
             updateOrderInsertionImpacts(
                     orderId2order, instance.getDrivers(), bestOrderInsertionImpact.getOrderInsertion());
             pendingOrders.remove(orderId2order.get(nextOrderId));
         }
-
-        this.getSolution().evaluate();
-        return getSolution();
+        Solution solution = new Solution(this.getPartialSolution().getDriverId2route());
+        solution.evaluate();
+        return solution;
     }
 
     private int findBestOrder(Map<Integer, Double> orderId2regret){
@@ -156,7 +160,7 @@ public class RegretBasedConstructionHeuristic implements HeuristicAlgorithm {
                     updatedOrderInsertionImpact = orderInsertionImpact;
                 else
                     updatedOrderInsertionImpact = SearchUtilities.findBestOrderInsertion(
-                            this.getSolution().getDriverId2route().get(driverId), orderId2order.get(orderId),
+                            this.getPartialSolution().getDriverId2route().get(driverId), orderId2order.get(orderId),
                             this.getRouteCostFunction());
                 driverId2updatedOrderInsertionImpact.put(driverId, updatedOrderInsertionImpact);
                 if (updatedOrderInsertionImpact.getCostDelta() > maxCostDeltas.peek()) {
@@ -169,7 +173,7 @@ public class RegretBasedConstructionHeuristic implements HeuristicAlgorithm {
                 int driverId = driver.getId();
                 if (driverId2updatedOrderInsertionImpact.containsKey(driverId))
                     continue;
-                Route routeOfDriver = this.getSolution().getDriverId2route().get(driverId);
+                Route routeOfDriver = this.getPartialSolution().getDriverId2route().get(driverId);
                 if (routeOfDriver == null)
                     routeOfDriver = new Route(driver);
                 OrderInsertionImpact orderInsertionImpact = SearchUtilities.findBestOrderInsertion(
@@ -193,12 +197,28 @@ public class RegretBasedConstructionHeuristic implements HeuristicAlgorithm {
         this.setOrderId2orderInsertionImpacts(updatedOrderId2orderInsertionImpacts);
     }
 
+    public Instance getInstance() {
+        return instance;
+    }
+
+    public void setInstance(Instance instance) {
+        this.instance = instance;
+    }
+
     public Map<Integer, List<OrderInsertionImpact>> getOrderId2orderInsertionImpacts() {
         return orderId2orderInsertionImpacts;
     }
 
     public void setOrderId2orderInsertionImpacts(Map<Integer, List<OrderInsertionImpact>> orderId2orderInsertionImpacts) {
         this.orderId2orderInsertionImpacts = orderId2orderInsertionImpacts;
+    }
+
+    public PartialSolution getPartialSolution() {
+        return partialSolution;
+    }
+
+    public void setPartialSolution(PartialSolution partialSolution) {
+        this.partialSolution = partialSolution;
     }
 
     public int getRegretHorizon() {
@@ -217,11 +237,4 @@ public class RegretBasedConstructionHeuristic implements HeuristicAlgorithm {
         this.routeCostFunction = routeCostFunction;
     }
 
-    public Solution getSolution() {
-        return solution;
-    }
-
-    public void setSolution(Solution solution) {
-        this.solution = solution;
-    }
 }

@@ -10,6 +10,7 @@ import java.util.List;
 import algorithms.GreedyInsertionHeuristic;
 import algorithms.PartialSolution;
 import algorithms.RandomRemovalHeuristic;
+import algorithms.RegretBasedInsertionHeuristic;
 import common.Driver;
 import common.Order;
 import common.RouteCostFunction;
@@ -80,14 +81,15 @@ public class Main {
 
         /* Create an initial solution by the regret-based insertion heuristic */
 
-//        try {
-//            for (int k = 1; k <= 10; k++){
-//                Solution solution = new RegretBasedConstructionHeuristic(routeCostFunction, k).run(instance);
-//                System.out.println(String.format("RBC-%d found a solution with cost: %.2f", k, solution.getCost()));
-//            }
-//        } catch (UnserviceableOrderException e) {
-//            e.printStackTrace();
-//        }
+        try {
+            for (int k = 1; k <= 10; k++){
+                solution = new RegretBasedInsertionHeuristic(instance, routeCostFunction, k).run(
+                        new PartialSolution(instance.getOrders()));
+                System.out.println(String.format("RBC-%d found a solution with cost: %.2f", k, solution.getCost()));
+            }
+        } catch (UnserviceableOrderException e) {
+            e.printStackTrace();
+        }
 
         int numOrdersToRemove = 10;
         RandomRemovalHeuristic heuristic = new RandomRemovalHeuristic(instance, routeCostFunction);
@@ -98,7 +100,6 @@ public class Main {
         } catch (InfeasibleRouteException e) {
             e.printStackTrace();
         }
-
 
         System.out.println("Done!");
     }
