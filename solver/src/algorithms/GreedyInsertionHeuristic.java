@@ -16,20 +16,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class GreedyConstructionHeuristic implements HeuristicAlgorithm {
+public class GreedyInsertionHeuristic implements InsertionHeuristic {
 
     private Map<OrderIdAndDriverId, OrderInsertionImpact> orderIdAndDriverId2orderInsertionImpact;
+    private Instance instance;
+    private PartialSolution partialSolution;
     private RouteCostFunction routeCostFunction;
-    private Solution solution;
 
-    public GreedyConstructionHeuristic(RouteCostFunction routeCostFunction) {
+    public GreedyInsertionHeuristic(Instance instance, RouteCostFunction routeCostFunction) {
+        this.instance = instance;
         this.orderIdAndDriverId2orderInsertionImpact = new HashMap<>();
         this.routeCostFunction = routeCostFunction;
-        this.solution = new Solution();
     }
 
     @Override
-    public Solution run(Instance instance) throws UnserviceableOrderException {
+    public Solution run(PartialSolution partialSolution) throws UnserviceableOrderException {
+
+        this.setPartialSolution(new PartialSolution(partialSolution));
 
         Map<Integer, Order> orderId2order = instance.getOrders().stream().collect(
                 Collectors.toMap(Order::getId, order -> order));
@@ -48,13 +51,13 @@ public class GreedyConstructionHeuristic implements HeuristicAlgorithm {
             int nextOrderId = findBestOrder(orderId2bestOrderInsertionImpact);
             OrderInsertionImpact orderInsertionImpact = orderId2bestOrderInsertionImpact.get(nextOrderId);
             int assignedDriverId = orderInsertionImpact.getOrderInsertion().getDriverId();
-            this.getSolution().updateRoute(assignedDriverId, orderInsertionImpact.getRoute());
+            this.getPartialSolution().updateRoute(assignedDriverId, orderInsertionImpact.getRoute());
             updateOrderInsertionImpacts(orderId2order, orderInsertionImpact.getOrderInsertion());
             pendingOrders.remove(orderId2order.get(nextOrderId));
         }
-
-        this.getSolution().evaluate();
-        return getSolution();
+        Solution solution = new Solution(this.getPartialSolution().getDriverId2route());
+        solution.evaluate();
+        return solution;
     }
 
     private int findBestOrder(Map<Integer, OrderInsertionImpact> orderId2bestOrderInsertionImpact){
@@ -116,11 +119,19 @@ public class GreedyConstructionHeuristic implements HeuristicAlgorithm {
                 continue;
             }
             OrderInsertionImpact updatedOrderInsertionImpact = SearchUtilities.findBestOrderInsertion(
-                    this.getSolution().getDriverId2route().get(driverId), orderId2order.get(orderId),
+                    this.getPartialSolution().getDriverId2route().get(driverId), orderId2order.get(orderId),
                     this.getRouteCostFunction());
             updatedOrderIdAndDriverId2orderInsertionImpact.put(entry.getKey(), updatedOrderInsertionImpact);
         }
         this.setOrderIdAndDriverId2orderInsertionImpact(updatedOrderIdAndDriverId2orderInsertionImpact);
+    }
+
+    public Instance getInstance() {
+        return instance;
+    }
+
+    public void setInstance(Instance instance) {
+        this.instance = instance;
     }
 
     public Map<OrderIdAndDriverId, OrderInsertionImpact> getOrderIdAndDriverId2orderInsertionImpact() {
@@ -132,6 +143,14 @@ public class GreedyConstructionHeuristic implements HeuristicAlgorithm {
         this.orderIdAndDriverId2orderInsertionImpact = orderIdAndDriverId2orderInsertionImpact;
     }
 
+    public PartialSolution getPartialSolution() {
+        return partialSolution;
+    }
+
+    public void setPartialSolution(PartialSolution partialSolution) {
+        this.partialSolution = partialSolution;
+    }
+
     public RouteCostFunction getRouteCostFunction() {
         return routeCostFunction;
     }
@@ -140,11 +159,4 @@ public class GreedyConstructionHeuristic implements HeuristicAlgorithm {
         this.routeCostFunction = routeCostFunction;
     }
 
-    public Solution getSolution() {
-        return solution;
-    }
-
-    public void setSolution(Solution solution) {
-        this.solution = solution;
-    }
 }

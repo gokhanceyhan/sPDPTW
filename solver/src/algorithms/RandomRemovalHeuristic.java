@@ -13,16 +13,18 @@ import java.util.*;
 public class RandomRemovalHeuristic implements RemovalHeuristic {
 
     private final static Random random = new Random(0);
+
     private Instance instance;
     private int numOrdersToRemove;
+    private RouteCostFunction routeCostFunction;
 
-    public RandomRemovalHeuristic(Instance instance) {
+    public RandomRemovalHeuristic(Instance instance, RouteCostFunction routeCostFunction) {
         this.instance = instance;
+        this.routeCostFunction = routeCostFunction;
     }
 
     @Override
-    public PartialSolution run(Solution initialSolution, RouteCostFunction routeCostFunction) throws
-            InfeasibleRouteException {
+    public PartialSolution run(Solution initialSolution) throws InfeasibleRouteException {
         Solution solution = new Solution(initialSolution);
         Map<Integer, Integer> orderId2driverId = new HashMap<>();
         for (Map.Entry<Integer, Route> entry : initialSolution.getDriverId2route().entrySet()){
@@ -35,7 +37,7 @@ public class RandomRemovalHeuristic implements RemovalHeuristic {
             int driverId = orderId2driverId.get(orderId);
             Route route = solution.getDriverId2route().get(driverId);
             route.remove(orderId);
-            route.evaluate(routeCostFunction);
+            route.evaluate(this.getRouteCostFunction());
         }
         return new PartialSolution(solution.getDriverId2route(), selectedOrders);
     }
@@ -73,5 +75,13 @@ public class RandomRemovalHeuristic implements RemovalHeuristic {
 
     public void setNumOrdersToRemove(int numOrdersToRemove) {
         this.numOrdersToRemove = numOrdersToRemove;
+    }
+
+    public RouteCostFunction getRouteCostFunction() {
+        return routeCostFunction;
+    }
+
+    public void setRouteCostFunction(RouteCostFunction routeCostFunction) {
+        this.routeCostFunction = routeCostFunction;
     }
 }

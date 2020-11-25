@@ -6,6 +6,6 @@ import output.Solution;
 
 public interface RemovalHeuristic {
 
-    PartialSolution run (Solution solution, RouteCostFunction routeCostFunction) throws InfeasibleRouteException;
+    PartialSolution run (Solution solution) throws InfeasibleRouteException;
 
 }
