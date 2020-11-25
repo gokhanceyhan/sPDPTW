@@ -49,7 +49,7 @@ public class RegretBasedConstructionHeuristic implements HeuristicAlgorithm {
             this.getSolution().updateRoute(assignedDriverId, bestOrderInsertionImpact.getRoute());
             updateOrderInsertionImpacts(
                     orderId2order, instance.getDrivers(), bestOrderInsertionImpact.getOrderInsertion());
-            pendingOrders.remove(orderId2order.get(assignedDriverId));
+            pendingOrders.remove(orderId2order.get(nextOrderId));
         }
 
         this.getSolution().evaluate();
@@ -147,7 +147,8 @@ public class RegretBasedConstructionHeuristic implements HeuristicAlgorithm {
             Stack<Double> maxCostDeltas = new Stack<>();
             maxCostDeltas.push(Double.NEGATIVE_INFINITY);
             Stack<Integer> driverIdsWithMaxCostDelta = new Stack<>();
-            driverIdsWithMaxCostDelta.push(-1);
+            int dummyDriverId = -1;
+            driverIdsWithMaxCostDelta.push(dummyDriverId);
             for (OrderInsertionImpact orderInsertionImpact : entry.getValue()){
                 int driverId = orderInsertionImpact.getOrderInsertion().getDriverId();
                 OrderInsertionImpact updatedOrderInsertionImpact;

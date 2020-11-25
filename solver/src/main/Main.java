@@ -66,7 +66,7 @@ public class Main {
                 1.0
         );
 
-        /* Create a simple solution by the greedy insertion heuristic */
+        /* Create an initial solution by the greedy insertion heuristic */
         try {
             Solution solution = new GreedyConstructionHeuristic(routeCostFunction).run(instance);
             System.out.println(String.format("GCH found a solution with cost: %.2f", solution.getCost()));
@@ -74,11 +74,13 @@ public class Main {
             e.printStackTrace();
         }
 
-        /* Create a simple solution by the regret-based insertion heuristic */
-        int regretHorizon = 1;
+        /* Create an initial solution by the regret-based insertion heuristic */
+
         try {
-            Solution solution = new RegretBasedConstructionHeuristic(routeCostFunction, regretHorizon).run(instance);
-            System.out.println(String.format("RBC found a solution with cost: %.2f", solution.getCost()));
+            for (int k = 1; k <= 10; k++){
+                Solution solution = new RegretBasedConstructionHeuristic(routeCostFunction, k).run(instance);
+                System.out.println(String.format("RBC-%d found a solution with cost: %.2f", k, solution.getCost()));
+            }
         } catch (UnserviceableOrderException e) {
             e.printStackTrace();
         }
