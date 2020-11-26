@@ -13,6 +13,7 @@ import algorithms.*;
 import common.Driver;
 import common.Order;
 import common.RouteCostFunction;
+import common.ScalingFunction;
 import exceptions.InfeasibleRouteException;
 import exceptions.UnserviceableOrderException;
 import input.CsvInputDataConsumer;
@@ -71,18 +72,8 @@ public class Main {
                 1.0
         );
 
-        /* Create an initial solution by the greedy insertion heuristic */
-        Solution solution = null;
-//        try {
-//            solution = new GreedyInsertionHeuristic(instance, routeCostFunction).run(
-//                    new PartialSolution(instance.getOrders()));
-//            System.out.println(String.format("GCH found a solution with cost: %.2f", solution.getCost()));
-//        } catch (UnserviceableOrderException e) {
-//            e.printStackTrace();
-//        }
-
         /* Create an initial solution by the regret-based insertion heuristic */
-
+        Solution solution = null;
         try {
             for (int k = 4; k <= 4; k++){
                 solution = new RegretBasedInsertionHeuristic(instance, routeCostFunction, k).run(
@@ -92,17 +83,6 @@ public class Main {
         } catch (UnserviceableOrderException e) {
             e.printStackTrace();
         }
-//
-//        int numOrdersToRemove = 10;
-//        int randomizationCoefficient = 1;
-//        GreedyRemovalHeuristic heuristic = new GreedyRemovalHeuristic(
-//                instance, numOrdersToRemove, randomizationCoefficient, routeCostFunction);
-//        try {
-//            PartialSolution partialSolution = heuristic.run(solution);
-//            System.out.println(String.format("%d orders are removed", numOrdersToRemove));
-//        } catch (InfeasibleRouteException e) {
-//            e.printStackTrace();
-//        }
 
         /* Check a few stats */
         int numLateDeliveries = 0;
@@ -124,6 +104,28 @@ public class Main {
         String outputFilePath = inputPath + "results.csv";
         OutputDataProducer outputDataProducer = new CsvOutputDataProducer();
         outputDataProducer.write(solution, outputFilePath);
+
+        int numOrdersToRemove = 100;
+        int randomizationCoefficient = 1;
+
+        double taskCompletionTimeCoefficient = 1;
+        ScalingFunction taskCompletionTimeScalingFunction = new ScalingFunction(10000, 0);
+        double taskDistanceCoefficient = 1;
+        ScalingFunction taskDistanceScalingFunction = new ScalingFunction(1000, 0);
+        double taskLoadCoefficient = 1;
+        ScalingFunction taskLoadScalingFunction = new ScalingFunction(20, 0);
+        OrderSimilarityFunction orderSimilarityFunction = new OrderSimilarityFunction(
+                taskCompletionTimeScalingFunction, taskDistanceScalingFunction, taskLoadScalingFunction,
+                taskCompletionTimeCoefficient, taskDistanceCoefficient, taskLoadCoefficient);
+
+        ShawRemovalHeuristic heuristic = new ShawRemovalHeuristic(
+                instance, numOrdersToRemove, orderSimilarityFunction, randomizationCoefficient, routeCostFunction);
+        try {
+            PartialSolution partialSolution = heuristic.run(solution);
+            System.out.println(String.format("%d orders are removed", numOrdersToRemove));
+        } catch (InfeasibleRouteException e) {
+            e.printStackTrace();
+        }
 
         System.out.println("Done!");
     }

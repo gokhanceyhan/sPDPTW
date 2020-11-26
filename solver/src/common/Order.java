@@ -1,5 +1,7 @@
 package common;
 
+import java.util.Objects;
+
 public class Order {
 
     private Task delivery;
@@ -41,5 +43,18 @@ public class Order {
 
     public void setPickup(Task pickup) {
         this.pickup = pickup;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Order order = (Order) o;
+        return getId() == order.getId();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getId());
     }
 }

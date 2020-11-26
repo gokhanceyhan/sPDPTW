@@ -86,8 +86,8 @@ public class GreedyRemovalHeuristic implements RemovalHeuristic {
     private int selectOrderIdToRemove(){
         List<OrderRemovalImpact> orderRemovalImpacts = new ArrayList<>(this.getOrderId2orderRemovalImpact().values());
         Collections.sort(orderRemovalImpacts);
-        int selectedIndex = (int) Math.pow(random.nextDouble(), this.getRandomizationCoefficient()) *
-                orderRemovalImpacts.size();
+        int selectedIndex = (int) (Math.pow(random.nextDouble(), this.getRandomizationCoefficient()) *
+                orderRemovalImpacts.size());
         return orderRemovalImpacts.get(0).getOrderId();
     }
 

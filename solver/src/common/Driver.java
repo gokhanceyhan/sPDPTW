@@ -1,5 +1,7 @@
 package common;
 
+import java.util.Objects;
+
 public class Driver {
 
     public static final double AVERAGE_SPEED_IN_KM_PER_HOUR = 15;
@@ -70,5 +72,18 @@ public class Driver {
 
     public void setTimeWindow(TimeWindow timeWindow) {
         this.timeWindow = timeWindow;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Driver driver = (Driver) o;
+        return getId() == driver.getId();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getId());
     }
 }
