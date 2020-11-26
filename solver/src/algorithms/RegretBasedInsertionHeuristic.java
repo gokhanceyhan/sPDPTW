@@ -24,7 +24,7 @@ public class RegretBasedInsertionHeuristic implements InsertionHeuristic {
     public RegretBasedInsertionHeuristic(Instance instance, RouteCostFunction routeCostFunction, int regretHorizon) {
         this.instance = instance;
         this.orderId2orderInsertionImpacts = new HashMap<>();
-        assert regretHorizon > 0;
+        assert regretHorizon > 1;
         this.regretHorizon = regretHorizon;
         this.routeCostFunction = routeCostFunction;
     }
@@ -33,19 +33,17 @@ public class RegretBasedInsertionHeuristic implements InsertionHeuristic {
     public Solution run(PartialSolution partialSolution) throws UnserviceableOrderException {
 
         this.setPartialSolution(new PartialSolution(partialSolution));
-
-        Map<Integer, Order> orderId2order = instance.getOrders().stream().collect(
+        List<Order> pendingOrders = this.getPartialSolution().getPendingOrders();
+        Map<Integer, Order> orderId2order = pendingOrders.stream().collect(
                 Collectors.toMap(Order::getId, order -> order));
-        initializeOrderInsertionImpacts(instance.getOrders(), instance.getDrivers());
+        initializeOrderInsertionImpacts(pendingOrders, instance.getDrivers());
 
-        List<Order> pendingOrders = new ArrayList<>(instance.getOrders());
         while (pendingOrders.size() > 0){
             Map<Integer, Double> orderId2regret = new HashMap<>();
             for (Order order : pendingOrders){
                 double regret = calculateRegret(this.getOrderId2orderInsertionImpacts().get(order.getId()));
                 orderId2regret.put(order.getId(), regret);
             }
-            // WARNING: returns a random order when regret horizon is 1.
             int nextOrderId = findBestOrder(orderId2regret);
             OrderInsertionImpact bestOrderInsertionImpact = findBestOrderInsertionImpact(
                     nextOrderId, this.getOrderId2orderInsertionImpacts().get(nextOrderId));
@@ -58,6 +56,11 @@ public class RegretBasedInsertionHeuristic implements InsertionHeuristic {
         Solution solution = new Solution(this.getPartialSolution().getDriverId2route());
         solution.evaluate();
         return solution;
+    }
+
+    private void clear(){
+        this.setPartialSolution(null);
+        this.getOrderId2orderInsertionImpacts().clear();
     }
 
     private int findBestOrder(Map<Integer, Double> orderId2regret){

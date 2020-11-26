@@ -52,7 +52,7 @@ public class Solution {
         this.setCost(cost);
     }
 
-    private void validate(Instance instance) throws InfeasibleSolutionException {
+    public void validate(Instance instance) throws InfeasibleSolutionException {
         List<Integer> assignedOrderIds = new ArrayList<>();
         for (Route route: this.getDriverId2route().values()) {
             for (Integer orderId: route.getOrderIds()) {

@@ -18,8 +18,9 @@ public class RandomRemovalHeuristic implements RemovalHeuristic {
     private int numOrdersToRemove;
     private RouteCostFunction routeCostFunction;
 
-    public RandomRemovalHeuristic(Instance instance, RouteCostFunction routeCostFunction) {
+    public RandomRemovalHeuristic(Instance instance, int numOrdersToRemove, RouteCostFunction routeCostFunction) {
         this.instance = instance;
+        this.numOrdersToRemove = numOrdersToRemove;
         this.routeCostFunction = routeCostFunction;
     }
 
@@ -53,7 +54,7 @@ public class RandomRemovalHeuristic implements RemovalHeuristic {
         List<Order> selectedOrders = new ArrayList<>();
         while (numOrdersToRemove > 0){
             int selectedIndex = random.nextInt(orderIds.size());
-            Integer selectedOrderId = orderIds.get(selectedIndex);
+            int selectedOrderId = orderIds.get(selectedIndex);
             selectedOrders.add(orderId2order.get(selectedOrderId));
             numOrdersToRemove--;
             orderIds.remove(selectedIndex);

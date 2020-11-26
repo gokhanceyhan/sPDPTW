@@ -7,10 +7,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
 
-import algorithms.GreedyInsertionHeuristic;
-import algorithms.PartialSolution;
-import algorithms.RandomRemovalHeuristic;
-import algorithms.RegretBasedInsertionHeuristic;
+import algorithms.*;
 import common.Driver;
 import common.Order;
 import common.RouteCostFunction;
@@ -92,8 +89,9 @@ public class Main {
         }
 
         int numOrdersToRemove = 10;
-        RandomRemovalHeuristic heuristic = new RandomRemovalHeuristic(instance, routeCostFunction);
-        heuristic.setNumOrdersToRemove(numOrdersToRemove);
+        int randomizationCoefficient = 1;
+        GreedyRemovalHeuristic heuristic = new GreedyRemovalHeuristic(
+                instance, numOrdersToRemove, randomizationCoefficient, routeCostFunction);
         try {
             PartialSolution partialSolution = heuristic.run(solution);
             System.out.println(String.format("%d orders are removed", numOrdersToRemove));

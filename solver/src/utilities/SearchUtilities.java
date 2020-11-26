@@ -19,6 +19,14 @@ public class SearchUtilities {
         return route;
     }
 
+    public static Route removeOrder(Route initialRoute, Integer orderId, RouteCostFunction costFunction) throws
+            InfeasibleRouteException {
+        Route route = new Route(initialRoute);
+        route.remove(orderId);
+        route.evaluate(costFunction);
+        return route;
+    }
+
     public static OrderInsertionImpact findBestOrderInsertion(
             Route route, Order order, RouteCostFunction costFunction){
         int numTasks = route.getTasks().size();

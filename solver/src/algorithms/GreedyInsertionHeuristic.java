@@ -33,12 +33,11 @@ public class GreedyInsertionHeuristic implements InsertionHeuristic {
     public Solution run(PartialSolution partialSolution) throws UnserviceableOrderException {
 
         this.setPartialSolution(new PartialSolution(partialSolution));
-
-        Map<Integer, Order> orderId2order = instance.getOrders().stream().collect(
+        List<Order> pendingOrders = this.getPartialSolution().getPendingOrders();
+        Map<Integer, Order> orderId2order = pendingOrders.stream().collect(
                 Collectors.toMap(Order::getId, order -> order));
-        initializeOrderInsertionImpacts(instance.getOrders(), instance.getDrivers());
+        initializeOrderInsertionImpacts(pendingOrders, instance.getDrivers());
 
-        List<Order> pendingOrders = new ArrayList<>(instance.getOrders());
         while (pendingOrders.size() > 0){
             Map<Integer, OrderInsertionImpact> orderId2bestOrderInsertionImpact = new HashMap<>();
             for (Order order : pendingOrders){
@@ -58,6 +57,11 @@ public class GreedyInsertionHeuristic implements InsertionHeuristic {
         Solution solution = new Solution(this.getPartialSolution().getDriverId2route());
         solution.evaluate();
         return solution;
+    }
+
+    private void clear(){
+        this.setPartialSolution(null);
+        this.getOrderIdAndDriverId2orderInsertionImpact().clear();
     }
 
     private int findBestOrder(Map<Integer, OrderInsertionImpact> orderId2bestOrderInsertionImpact){
