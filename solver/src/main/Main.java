@@ -5,7 +5,9 @@ package main;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import algorithms.*;
 import common.Driver;
@@ -26,6 +28,9 @@ import org.apache.commons.cli.ParseException;
 
 import exceptions.InvalidInputException;
 import exceptions.NoSolutionException;
+import output.CsvOutputDataProducer;
+import output.OutputDataProducer;
+import output.Route;
 import output.Solution;
 
 /**
@@ -68,18 +73,18 @@ public class Main {
 
         /* Create an initial solution by the greedy insertion heuristic */
         Solution solution = null;
-        try {
-            solution = new GreedyInsertionHeuristic(instance, routeCostFunction).run(
-                    new PartialSolution(instance.getOrders()));
-            System.out.println(String.format("GCH found a solution with cost: %.2f", solution.getCost()));
-        } catch (UnserviceableOrderException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            solution = new GreedyInsertionHeuristic(instance, routeCostFunction).run(
+//                    new PartialSolution(instance.getOrders()));
+//            System.out.println(String.format("GCH found a solution with cost: %.2f", solution.getCost()));
+//        } catch (UnserviceableOrderException e) {
+//            e.printStackTrace();
+//        }
 
         /* Create an initial solution by the regret-based insertion heuristic */
 
         try {
-            for (int k = 1; k <= 10; k++){
+            for (int k = 4; k <= 4; k++){
                 solution = new RegretBasedInsertionHeuristic(instance, routeCostFunction, k).run(
                         new PartialSolution(instance.getOrders()));
                 System.out.println(String.format("RBC-%d found a solution with cost: %.2f", k, solution.getCost()));
@@ -87,17 +92,38 @@ public class Main {
         } catch (UnserviceableOrderException e) {
             e.printStackTrace();
         }
+//
+//        int numOrdersToRemove = 10;
+//        int randomizationCoefficient = 1;
+//        GreedyRemovalHeuristic heuristic = new GreedyRemovalHeuristic(
+//                instance, numOrdersToRemove, randomizationCoefficient, routeCostFunction);
+//        try {
+//            PartialSolution partialSolution = heuristic.run(solution);
+//            System.out.println(String.format("%d orders are removed", numOrdersToRemove));
+//        } catch (InfeasibleRouteException e) {
+//            e.printStackTrace();
+//        }
 
-        int numOrdersToRemove = 10;
-        int randomizationCoefficient = 1;
-        GreedyRemovalHeuristic heuristic = new GreedyRemovalHeuristic(
-                instance, numOrdersToRemove, randomizationCoefficient, routeCostFunction);
-        try {
-            PartialSolution partialSolution = heuristic.run(solution);
-            System.out.println(String.format("%d orders are removed", numOrdersToRemove));
-        } catch (InfeasibleRouteException e) {
-            e.printStackTrace();
+        /* Check a few stats */
+        int numLateDeliveries = 0;
+        List<Integer> lateDeliveredOrderIds = new ArrayList<>();
+        List<Long> delays = new ArrayList<>();
+        for (Map.Entry<Integer, Route> routeEntry: solution.getDriverId2route().entrySet()){
+            Route route = routeEntry.getValue();
+            numLateDeliveries += route.getLateDeliveredOrderId2delay().size();
+            for (Map.Entry<Integer, Double> orderEntry: route.getLateDeliveredOrderId2delay().entrySet()) {
+                lateDeliveredOrderIds.add(orderEntry.getKey());
+                delays.add(Math.round(orderEntry.getValue()));
+            }
         }
+        System.out.println(String.format("Number of late deliveries: %d", numLateDeliveries));
+        System.out.println(String.format("Late delivered order ids: %s", lateDeliveredOrderIds.toString()));
+        System.out.println(String.format("Delays (secs): %s", delays.toString()));
+
+        /* Generate the output file */
+        String outputFilePath = inputPath + "results.csv";
+        OutputDataProducer outputDataProducer = new CsvOutputDataProducer();
+        outputDataProducer.write(solution, outputFilePath);
 
         System.out.println("Done!");
     }

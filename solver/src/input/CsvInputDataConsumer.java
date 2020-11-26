@@ -37,13 +37,14 @@ public class CsvInputDataConsumer implements InputDataConsumer {
 
         BufferedReader br = new BufferedReader(new FileReader(dataPath));
         String[] headers = br.readLine().split(DELIMITER);
-
         String line = "";
         while ((line = br.readLine()) != null) {
             String[] driverData = line.split(DELIMITER);
             Driver driver = createDriver(headers, driverData);
             drivers.add(driver);
         }
+        br.close();
+
         return drivers;
     }
 
