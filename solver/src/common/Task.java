@@ -1,5 +1,7 @@
 package common;
 
+import java.util.Objects;
+
 public class Task {
 
     public static final int SERVICE_TIME_IN_SECONDS = 0;
@@ -69,5 +71,18 @@ public class Task {
 
     public void setType(TaskType type) {
         this.type = type;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Task task = (Task) o;
+        return getOrderId() == task.getOrderId() && getType() == task.getType();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getOrderId(), getType());
     }
 }

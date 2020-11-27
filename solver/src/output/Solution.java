@@ -74,6 +74,18 @@ public class Solution {
                 message = message.concat(String.format("%d ", orderId));
             throw new InfeasibleSolutionException(message);
         }
+    }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Solution solution = (Solution) o;
+        return Objects.equals(getDriverId2route(), solution.getDriverId2route());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getDriverId2route());
     }
 }

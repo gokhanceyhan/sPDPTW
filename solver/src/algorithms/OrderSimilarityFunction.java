@@ -5,34 +5,35 @@ import common.ScalingFunction;
 public class OrderSimilarityFunction {
 
     private double taskCompletionTimeCoefficient;
-    private ScalingFunction taskCompletionTimeScalingFunction;
+    private ScalingFunction taskCompletionTimeDifferenceScalingFunction;
     private double taskDistanceCoefficient;
     private ScalingFunction taskDistanceScalingFunction;
     private double taskLoadCoefficient;
-    private ScalingFunction taskLoadScalingFunction;
+    private ScalingFunction taskLoadDifferenceScalingFunction;
 
     public OrderSimilarityFunction(
-            ScalingFunction taskCompletionTimeScalingFunction, ScalingFunction taskDistanceScalingFunction,
-            ScalingFunction taskLoadScalingFunction, double taskCompletionTimeCoefficient,
+            ScalingFunction taskCompletionTimeDifferenceScalingFunction, ScalingFunction taskDistanceScalingFunction,
+            ScalingFunction taskLoadDifferenceScalingFunction, double taskCompletionTimeCoefficient,
             double taskDistanceCoefficient, double taskLoadCoefficient) {
         this.taskCompletionTimeCoefficient = taskCompletionTimeCoefficient;
-        this.taskCompletionTimeScalingFunction = taskCompletionTimeScalingFunction;
+        this.taskCompletionTimeDifferenceScalingFunction = taskCompletionTimeDifferenceScalingFunction;
         this.taskDistanceCoefficient = taskDistanceCoefficient;
         this.taskDistanceScalingFunction = taskDistanceScalingFunction;
         this.taskLoadCoefficient = taskLoadCoefficient;
-        this.taskLoadScalingFunction = taskLoadScalingFunction;
+        this.taskLoadDifferenceScalingFunction = taskLoadDifferenceScalingFunction;
     }
 
     public double calculateSimilarityValue(OrderSimilarity orderSimilarity){
         double taskCompletionTimeTerm = this.getTaskCompletionTimeCoefficient() * (
-                this.getTaskCompletionTimeScalingFunction().scale(orderSimilarity.getDifferenceBetweenPickUpTimes()) +
-                        this.getTaskCompletionTimeScalingFunction().scale(
+                this.getTaskCompletionTimeDifferenceScalingFunction().scale(
+                        orderSimilarity.getDifferenceBetweenPickUpTimes()) +
+                        this.getTaskCompletionTimeDifferenceScalingFunction().scale(
                                 orderSimilarity.getDifferenceBetweenDeliveryTimes()));
         double taskDistanceTerm = this.getTaskDistanceCoefficient() * (
                 this.getTaskDistanceScalingFunction().scale(orderSimilarity.getDistanceBetweenPickUpTasks()) +
                         this.getTaskDistanceScalingFunction().scale(orderSimilarity.getDistanceBetweenDeliveryTasks()));
         double taskLoadTerm = this.getTaskLoadCoefficient() *
-                this.getTaskLoadScalingFunction().scale(orderSimilarity.getDifferentBetweenLoads());
+                this.getTaskLoadDifferenceScalingFunction().scale(orderSimilarity.getDifferentBetweenLoads());
         return taskCompletionTimeTerm + taskDistanceTerm + taskLoadTerm;
     }
 
@@ -44,12 +45,13 @@ public class OrderSimilarityFunction {
         this.taskCompletionTimeCoefficient = taskCompletionTimeCoefficient;
     }
 
-    public ScalingFunction getTaskCompletionTimeScalingFunction() {
-        return taskCompletionTimeScalingFunction;
+    public ScalingFunction getTaskCompletionTimeDifferenceScalingFunction() {
+        return taskCompletionTimeDifferenceScalingFunction;
     }
 
-    public void setTaskCompletionTimeScalingFunction(ScalingFunction taskCompletionTimeScalingFunction) {
-        this.taskCompletionTimeScalingFunction = taskCompletionTimeScalingFunction;
+    public void setTaskCompletionTimeDifferenceScalingFunction(
+            ScalingFunction taskCompletionTimeDifferenceScalingFunction) {
+        this.taskCompletionTimeDifferenceScalingFunction = taskCompletionTimeDifferenceScalingFunction;
     }
 
     public double getTaskDistanceCoefficient() {
@@ -76,11 +78,11 @@ public class OrderSimilarityFunction {
         this.taskLoadCoefficient = taskLoadCoefficient;
     }
 
-    public ScalingFunction getTaskLoadScalingFunction() {
-        return taskLoadScalingFunction;
+    public ScalingFunction getTaskLoadDifferenceScalingFunction() {
+        return taskLoadDifferenceScalingFunction;
     }
 
-    public void setTaskLoadScalingFunction(ScalingFunction taskLoadScalingFunction) {
-        this.taskLoadScalingFunction = taskLoadScalingFunction;
+    public void setTaskLoadDifferenceScalingFunction(ScalingFunction taskLoadDifferenceScalingFunction) {
+        this.taskLoadDifferenceScalingFunction = taskLoadDifferenceScalingFunction;
     }
 }

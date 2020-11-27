@@ -261,4 +261,17 @@ public class Route {
         this.registerTasks();
         this.schedule();
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Route route = (Route) o;
+        return getTasks().equals(route.getTasks());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getTasks());
+    }
 }
