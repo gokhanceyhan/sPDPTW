@@ -43,6 +43,16 @@ public class RandomRemovalHeuristic implements RemovalHeuristic {
         return new PartialSolution(solution.getDriverId2route(), selectedOrders);
     }
 
+    @Override
+    public void clear() {
+
+    }
+
+    @Override
+    public RemovalHeuristicType getType() {
+        return RemovalHeuristicType.RANDOM_REMOVAL;
+    }
+
     private List<Order> selectOrdersToRemove(){
         Map<Integer, Order> orderId2order = new HashMap<>();
         List<Integer> orderIds = new ArrayList<>();

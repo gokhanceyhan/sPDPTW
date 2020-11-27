@@ -59,9 +59,14 @@ public class GreedyInsertionHeuristic implements InsertionHeuristic {
         return solution;
     }
 
-    private void clear(){
+    public void clear(){
         this.setPartialSolution(null);
         this.getOrderIdAndDriverId2orderInsertionImpact().clear();
+    }
+
+    @Override
+    public InsertionHeuristicType getType() {
+        return InsertionHeuristicType.GREEDY_INSERTION;
     }
 
     private int findBestOrder(Map<Integer, OrderInsertionImpact> orderId2bestOrderInsertionImpact){

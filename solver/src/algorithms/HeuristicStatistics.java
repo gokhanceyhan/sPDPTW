@@ -21,6 +21,14 @@ public class HeuristicStatistics {
         this.score = score;
     }
 
+    public void clear(){
+        this.setNumTimesUsed(0);
+        this.setNumTimesWithAcceptedSolution(0);
+        this.setNumTimesWithLocallyImprovedSolution(0);
+        this.setNumTimesWithNewGlobalBestSolution(0);
+        this.setScore(0.0);
+    }
+
     public void incrementNumTimeUsed(){
         this.setNumTimesUsed(this.getNumTimesUsed() + 1);
     }

@@ -8,4 +8,8 @@ public interface InsertionHeuristic {
 
     Solution run (PartialSolution partialSolution) throws UnserviceableOrderException;
 
+    void clear();
+
+    InsertionHeuristicType getType();
+
 }

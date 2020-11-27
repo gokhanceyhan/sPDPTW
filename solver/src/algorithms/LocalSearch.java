@@ -16,12 +16,17 @@ public class LocalSearch {
         this.instance = instance;
     }
 
-    public Solution run (Solution initialSolution) throws
+    public Solution run (Solution solution) throws
             UnserviceableOrderException, InfeasibleRouteException, InfeasibleSolutionException {
-        PartialSolution partialSolution = this.getRemovalHeuristic().run(initialSolution);
-        Solution solution = this.getInsertionHeuristic().run(partialSolution);
-        solution.validate(this.getInstance());
-        return solution;
+        Solution initialSolution = new Solution(solution);
+        RemovalHeuristic removalHeuristic = this.getRemovalHeuristic();
+        InsertionHeuristic insertionHeuristic = this.getInsertionHeuristic();
+        removalHeuristic.clear();
+        insertionHeuristic.clear();
+        PartialSolution partialSolution = removalHeuristic.run(initialSolution);
+        Solution candidateSolution = insertionHeuristic.run(partialSolution);
+        candidateSolution.validate(this.getInstance());
+        return candidateSolution;
     }
 
     public InsertionHeuristic getInsertionHeuristic() {

@@ -64,6 +64,16 @@ public class ShawRemovalHeuristic implements RemovalHeuristic {
         return new PartialSolution(driverId2updatedRoute, selectedOrders);
     }
 
+    @Override
+    public void clear(){
+
+    }
+
+    @Override
+    public RemovalHeuristicType getType() {
+        return RemovalHeuristicType.SHAW_REMOVAL;
+    }
+
     private Order selectFirstOrderToRemove(){
         List<Order> orders = this.getInstance().getOrders();
         int selectedIndex = random.nextInt(orders.size());

@@ -55,8 +55,18 @@ public class GreedyRemovalHeuristic implements RemovalHeuristic {
             numOrdersToRemove--;
             updateOrderRemovalImpacts(selectedOrderId, driverIdToUpdate);
         }
-
         return this.getPartialSolution();
+    }
+
+    @Override
+    public void clear(){
+        this.setPartialSolution(null);
+        this.getOrderId2orderRemovalImpact().clear();
+    }
+
+    @Override
+    public RemovalHeuristicType getType() {
+        return RemovalHeuristicType.GREEDY_REMOVAL;
     }
 
     private void updateOrderRemovalImpacts(int lastRemovedOrderId, int lastUpdatedDriverId) throws

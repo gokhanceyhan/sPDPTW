@@ -58,9 +58,14 @@ public class RegretBasedInsertionHeuristic implements InsertionHeuristic {
         return solution;
     }
 
-    private void clear(){
+    public void clear(){
         this.setPartialSolution(null);
         this.getOrderId2orderInsertionImpacts().clear();
+    }
+
+    @Override
+    public InsertionHeuristicType getType() {
+        return InsertionHeuristicType.REGRET_BASED_INSERTION;
     }
 
     private int findBestOrder(Map<Integer, Double> orderId2regret){

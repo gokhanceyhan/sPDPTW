@@ -92,6 +92,19 @@ public class HeuristicManager {
         return this.getRemovalHeuristicType2heuristic().get(selectedHeuristicType);
     }
 
+    public void clearHeuristicStatistics(){
+        for (Map.Entry<InsertionHeuristicType, HeuristicStatistics> entry:
+                this.getInsertionHeuristicType2statistics().entrySet()){
+            HeuristicStatistics statistics = entry.getValue();
+            statistics.clear();
+        }
+        for (Map.Entry<RemovalHeuristicType, HeuristicStatistics> entry:
+                this.getRemovalHeuristicType2statistics().entrySet()){
+            HeuristicStatistics statistics = entry.getValue();
+            statistics.clear();
+        }
+    }
+
     public void updateHeuristicStatistics(LocalSearchResult localSearchResult){
         InsertionHeuristicType insertionHeuristicType = localSearchResult.getInsertionHeuristicType();
         RemovalHeuristicType removalHeuristicType = localSearchResult.getRemovalHeuristicType();
@@ -140,7 +153,6 @@ public class HeuristicManager {
             updatedRemovalHeuristicType2weight.put(heuristicType, updatedWeight);
         }
         this.setRemovalHeuristicType2weight(updatedRemovalHeuristicType2weight);
-
     }
 
     private void initialize(){

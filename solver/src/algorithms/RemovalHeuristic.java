@@ -8,4 +8,7 @@ public interface RemovalHeuristic {
 
     PartialSolution run (Solution solution) throws InfeasibleRouteException;
 
+    void clear();
+
+    RemovalHeuristicType getType();
 }

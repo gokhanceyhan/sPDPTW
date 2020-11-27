@@ -5,12 +5,14 @@ import common.ScalingFunction;
 
 public class SimulatedAnnealingConfiguration {
 
+    private double coolingRate;
     private InsertionHeuristicType constructionHeuristicType;
     private int numIterations;
     private int numOrdersToRemove;
     private double randomizationCoefficient;
     private double reactionFactor;
     private int regretHorizon;
+    private int segmentSize;
 
     //order similarity related parameters
     private double orderSimilarityTaskCompletionTimeCoefficient;
@@ -28,13 +30,22 @@ public class SimulatedAnnealingConfiguration {
     private double totalDeliveryDelayCostWeight;
     private double travelTimeCostWeight;
 
-    public SimulatedAnnealingConfiguration(InsertionHeuristicType constructionHeuristicType, int numIterations, int numOrdersToRemove, double randomizationCoefficient, double reactionFactor, int regretHorizon, double orderSimilarityTaskCompletionTimeCoefficient, double orderSimilarityTaskDistanceCoefficient, double orderSimilarityTaskLoadCoefficient, double rewardForNewGlobalBestSolution, double rewardForLocallyImprovedSolution, double rewardForAcceptedSolution, double distanceTravelledCostWeight, double numLateDeliveriesCostWeight, double totalDeliveryDelayCostWeight, double travelTimeCostWeight) {
+    public SimulatedAnnealingConfiguration(
+            double coolingRate, InsertionHeuristicType constructionHeuristicType, int numIterations,
+            int numOrdersToRemove, double randomizationCoefficient, double reactionFactor, int regretHorizon,
+            int segmentSize, double orderSimilarityTaskCompletionTimeCoefficient,
+            double orderSimilarityTaskDistanceCoefficient, double orderSimilarityTaskLoadCoefficient,
+            double rewardForNewGlobalBestSolution, double rewardForLocallyImprovedSolution,
+            double rewardForAcceptedSolution, double distanceTravelledCostWeight, double numLateDeliveriesCostWeight,
+            double totalDeliveryDelayCostWeight, double travelTimeCostWeight) {
+        this.coolingRate = coolingRate;
         this.constructionHeuristicType = constructionHeuristicType;
         this.numIterations = numIterations;
         this.numOrdersToRemove = numOrdersToRemove;
         this.randomizationCoefficient = randomizationCoefficient;
         this.reactionFactor = reactionFactor;
         this.regretHorizon = regretHorizon;
+        this.segmentSize = segmentSize;
         this.orderSimilarityTaskCompletionTimeCoefficient = orderSimilarityTaskCompletionTimeCoefficient;
         this.orderSimilarityTaskDistanceCoefficient = orderSimilarityTaskDistanceCoefficient;
         this.orderSimilarityTaskLoadCoefficient = orderSimilarityTaskLoadCoefficient;
@@ -45,6 +56,14 @@ public class SimulatedAnnealingConfiguration {
         this.numLateDeliveriesCostWeight = numLateDeliveriesCostWeight;
         this.totalDeliveryDelayCostWeight = totalDeliveryDelayCostWeight;
         this.travelTimeCostWeight = travelTimeCostWeight;
+    }
+
+    public double getCoolingRate() {
+        return coolingRate;
+    }
+
+    public void setCoolingRate(double coolingRate) {
+        this.coolingRate = coolingRate;
     }
 
     public InsertionHeuristicType getConstructionHeuristicType() {
@@ -93,6 +112,14 @@ public class SimulatedAnnealingConfiguration {
 
     public void setRegretHorizon(int regretHorizon) {
         this.regretHorizon = regretHorizon;
+    }
+
+    public int getSegmentSize() {
+        return segmentSize;
+    }
+
+    public void setSegmentSize(int segmentSize) {
+        this.segmentSize = segmentSize;
     }
 
     public double getOrderSimilarityTaskCompletionTimeCoefficient() {

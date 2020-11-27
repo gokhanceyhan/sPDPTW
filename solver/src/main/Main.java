@@ -14,8 +14,7 @@ import common.Driver;
 import common.Order;
 import common.RouteCostFunction;
 import common.ScalingFunction;
-import exceptions.InfeasibleRouteException;
-import exceptions.UnserviceableOrderException;
+import exceptions.*;
 import input.CsvInputDataConsumer;
 import input.InputDataConsumer;
 import input.Instance;
@@ -27,12 +26,13 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
-import exceptions.InvalidInputException;
-import exceptions.NoSolutionException;
 import output.CsvOutputDataProducer;
 import output.OutputDataProducer;
 import output.Route;
 import output.Solution;
+import solver.SimulatedAnnealingAlgorithm;
+import solver.SimulatedAnnealingConfiguration;
+import solver.SimulatedAnnealingConfigurationBuilder;
 
 /**
  * @author gokhanceyhan
@@ -66,28 +66,24 @@ public class Main {
         /* Read input data */
         Instance instance = createInstance(inputPath, driverFileName, orderFileName);
 
-        /* Create the cost function */
-        RouteCostFunction routeCostFunction = new RouteCostFunction(
-                1.0, 1000000, 1000,
-                1.0
-        );
-
-        /* Create an initial solution by the regret-based insertion heuristic */
+        /* Run the algorithm */
+        SimulatedAnnealingConfigurationBuilder configurationBuilder = new SimulatedAnnealingConfigurationBuilder();
+        SimulatedAnnealingConfiguration configuration = configurationBuilder.setNumIterations(10).build();
+        SimulatedAnnealingAlgorithm algorithm = new SimulatedAnnealingAlgorithm(instance, configuration);
         Solution solution = null;
         try {
-            for (int k = 4; k <= 4; k++){
-                solution = new RegretBasedInsertionHeuristic(instance, routeCostFunction, k).run(
-                        new PartialSolution(instance.getOrders()));
-                System.out.println(String.format("RBC-%d found a solution with cost: %.2f", k, solution.getCost()));
-            }
-        } catch (UnserviceableOrderException e) {
+            solution = algorithm.run();
+        } catch (UnserviceableOrderException | InfeasibleRouteException | InfeasibleSolutionException e) {
             e.printStackTrace();
         }
+
+        assert solution != null;
 
         /* Check a few stats */
         int numLateDeliveries = 0;
         List<Integer> lateDeliveredOrderIds = new ArrayList<>();
         List<Long> delays = new ArrayList<>();
+
         for (Map.Entry<Integer, Route> routeEntry: solution.getDriverId2route().entrySet()){
             Route route = routeEntry.getValue();
             numLateDeliveries += route.getLateDeliveredOrderId2delay().size();
@@ -104,28 +100,6 @@ public class Main {
         String outputFilePath = inputPath + "results.csv";
         OutputDataProducer outputDataProducer = new CsvOutputDataProducer();
         outputDataProducer.write(solution, outputFilePath);
-
-        int numOrdersToRemove = 100;
-        int randomizationCoefficient = 1;
-
-        double taskCompletionTimeCoefficient = 1;
-        ScalingFunction taskCompletionTimeScalingFunction = new ScalingFunction(10000, 0);
-        double taskDistanceCoefficient = 1;
-        ScalingFunction taskDistanceScalingFunction = new ScalingFunction(1000, 0);
-        double taskLoadCoefficient = 1;
-        ScalingFunction taskLoadScalingFunction = new ScalingFunction(20, 0);
-        OrderSimilarityFunction orderSimilarityFunction = new OrderSimilarityFunction(
-                taskCompletionTimeScalingFunction, taskDistanceScalingFunction, taskLoadScalingFunction,
-                taskCompletionTimeCoefficient, taskDistanceCoefficient, taskLoadCoefficient);
-
-        ShawRemovalHeuristic heuristic = new ShawRemovalHeuristic(
-                instance, numOrdersToRemove, orderSimilarityFunction, randomizationCoefficient, routeCostFunction);
-        try {
-            PartialSolution partialSolution = heuristic.run(solution);
-            System.out.println(String.format("%d orders are removed", numOrdersToRemove));
-        } catch (InfeasibleRouteException e) {
-            e.printStackTrace();
-        }
 
         System.out.println("Done!");
     }
