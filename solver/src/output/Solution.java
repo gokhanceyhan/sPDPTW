@@ -29,6 +29,51 @@ public class Solution {
         this.driverId2route = driverId2route;
     }
 
+    public void printSolution(){
+        int numLateDeliveries = 0;
+        List<Integer> lateDeliveredOrderIds = new ArrayList<>();
+        List<Long> delays = new ArrayList<>();
+        double totalDelay = 0.0;
+
+        for (Map.Entry<Integer, Route> routeEntry: this.getDriverId2route().entrySet()){
+            Route route = routeEntry.getValue();
+            numLateDeliveries += route.getLateDeliveredOrderId2delay().size();
+            for (Map.Entry<Integer, Double> orderEntry: route.getLateDeliveredOrderId2delay().entrySet()) {
+                lateDeliveredOrderIds.add(orderEntry.getKey());
+                delays.add(Math.round(orderEntry.getValue()));
+                totalDelay += orderEntry.getValue();
+            }
+        }
+
+        double totalDistanceTravelled = 0.0;
+        double maxDistanceTravelled = 0.0;
+        double totalTravelTime = 0.0;
+        double maxTravelTime = 0.0;
+
+        for (Map.Entry<Integer, Route> routeEntry: this.getDriverId2route().entrySet()){
+            Route route = routeEntry.getValue();
+            double distanceTravelled = route.getDistanceTravelled();
+            totalDistanceTravelled += distanceTravelled;
+            if (distanceTravelled > maxDistanceTravelled)
+                maxDistanceTravelled = distanceTravelled;
+            double travelTime = route.getTravelTime();
+            totalTravelTime += travelTime;
+            if (travelTime > maxTravelTime)
+                maxTravelTime = travelTime;
+        }
+
+        System.out.println(String.format("Cost: %.2f", this.getCost()));
+        System.out.println(String.format("Number of late deliveries: %d", numLateDeliveries));
+        System.out.println(String.format("Total delay (secs): %.2f", totalDelay));
+        System.out.println(String.format("Late delivered order ids: %s", lateDeliveredOrderIds.toString()));
+        System.out.println(String.format("Delays (secs): %s", delays.toString()));
+        System.out.println(String.format("Total distance: %.2f", totalDistanceTravelled));
+        System.out.println(String.format("Max distance: %.2f", maxDistanceTravelled));
+        System.out.println(String.format("Total travel time (secs): %.2f", totalTravelTime));
+        System.out.println(String.format("Max travel time (secs): %.2f", maxTravelTime));
+
+    }
+
     public double getCost() {
         return cost;
     }

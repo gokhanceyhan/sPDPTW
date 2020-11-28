@@ -43,6 +43,7 @@ public class Main {
     public static void main(String[] args) throws FileNotFoundException, InvalidInputException, NoSolutionException {
 
         System.out.println("Started...");
+        long startTime = System.currentTimeMillis();
 
         /* Create argument options */
         Options options = createArgumentOptions();
@@ -68,7 +69,7 @@ public class Main {
 
         /* Run the algorithm */
         SimulatedAnnealingConfigurationBuilder configurationBuilder = new SimulatedAnnealingConfigurationBuilder();
-        SimulatedAnnealingConfiguration configuration = configurationBuilder.setNumIterations(1000).build();
+        SimulatedAnnealingConfiguration configuration = configurationBuilder.build();
         SimulatedAnnealingAlgorithm algorithm = new SimulatedAnnealingAlgorithm(instance, configuration);
         Solution solution = null;
         try {
@@ -79,23 +80,8 @@ public class Main {
 
         assert solution != null;
 
-        /* Check a few stats */
-        int numLateDeliveries = 0;
-        List<Integer> lateDeliveredOrderIds = new ArrayList<>();
-        List<Long> delays = new ArrayList<>();
-
-        for (Map.Entry<Integer, Route> routeEntry: solution.getDriverId2route().entrySet()){
-            Route route = routeEntry.getValue();
-            numLateDeliveries += route.getLateDeliveredOrderId2delay().size();
-            for (Map.Entry<Integer, Double> orderEntry: route.getLateDeliveredOrderId2delay().entrySet()) {
-                lateDeliveredOrderIds.add(orderEntry.getKey());
-                delays.add(Math.round(orderEntry.getValue()));
-            }
-        }
-        System.out.println(String.format("Cost: %.2f", solution.getCost()));
-        System.out.println(String.format("Number of late deliveries: %d", numLateDeliveries));
-        System.out.println(String.format("Late delivered order ids: %s", lateDeliveredOrderIds.toString()));
-        System.out.println(String.format("Delays (secs): %s", delays.toString()));
+        /* Print the best solution */
+        solution.printSolution();
 
         /* Generate the output file */
         String outputFilePath = inputPath + "results.csv";
@@ -103,6 +89,9 @@ public class Main {
         outputDataProducer.write(solution, outputFilePath);
 
         System.out.println("Done!");
+        long endTime = System.currentTimeMillis();
+        double executionTime = (double) (endTime - startTime) / 1e3;
+        System.out.println(String.format("Execution time (secs): %.2f", executionTime));
     }
 
     /**

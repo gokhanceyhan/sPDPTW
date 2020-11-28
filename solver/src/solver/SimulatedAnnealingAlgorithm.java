@@ -46,6 +46,9 @@ public class SimulatedAnnealingAlgorithm implements HeuristicAlgorithm {
         while (iterationIndex < this.getConfiguration().getNumIterations()){
             // System.out.println(String.format("Running iteration %d of the SA algorithm", iterationIndex));
             if (iterationIndex % this.getConfiguration().getSegmentSize() == 0){
+                System.out.println(String.format("Iteration %d: ", iterationIndex));
+                System.out.println(
+                        String.format("Current temperature %.2f", this.getAnnealingScheme().getCurrentTemperature()));
                 this.getHeuristicManager().updateHeuristicWeights();
                 this.getHeuristicManager().clearHeuristicStatistics();
             }
