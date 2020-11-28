@@ -23,7 +23,10 @@ public class Solution {
 
     public Solution (Solution solution){
         this.cost = solution.getCost();
-        this.driverId2route = new HashMap<>(solution.getDriverId2route());
+        Map<Integer, Route> driverId2route = new HashMap<>();
+        for (Map.Entry<Integer, Route> entry : solution.getDriverId2route().entrySet())
+            driverId2route.put(entry.getKey(), new Route(entry.getValue()));
+        this.driverId2route = driverId2route;
     }
 
     public double getCost() {

@@ -106,7 +106,8 @@ public class GreedyInsertionHeuristic implements InsertionHeuristic {
         for (Order order : orders){
             for (Driver driver: drivers){
                 OrderIdAndDriverId orderIdAndDriverId = new OrderIdAndDriverId(driver.getId(), order.getId());
-                Route route = new Route(driver);
+                Route route = this.getPartialSolution().getDriverId2route().getOrDefault(
+                        driver.getId(), new Route(driver));
                 OrderInsertionImpact orderInsertionImpact = SearchUtilities.findBestOrderInsertion(
                         route, order, this.getRouteCostFunction());
                 orderIdAndDriverId2orderInsertionImpact.put(orderIdAndDriverId, orderInsertionImpact);

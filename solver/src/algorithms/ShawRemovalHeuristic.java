@@ -51,10 +51,13 @@ public class ShawRemovalHeuristic implements RemovalHeuristic {
             numOrdersToRemove--;
         }
 
-        Map<Integer, Route> driverId2updatedRoute = new HashMap<>(solution.getDriverId2route());
+        Map<Integer, Route> driverId2updatedRoute = new HashMap<>();
+        for (Map.Entry<Integer, Route> entry : solution.getDriverId2route().entrySet())
+            driverId2updatedRoute.put(entry.getKey(), new Route(entry.getValue()));
+
         for (Order order : selectedOrders){
             int assignedDriverId = orderId2assignedDriverId.get(order.getId());
-            Route route = solution.getDriverId2route().get(assignedDriverId);
+            Route route = driverId2updatedRoute.get(assignedDriverId);
             route.remove(order.getId());
         }
 

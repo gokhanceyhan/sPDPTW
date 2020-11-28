@@ -119,7 +119,8 @@ public class RegretBasedInsertionHeuristic implements InsertionHeuristic {
             Stack<Integer> indicesOfOrderInsertionImpactsWithMaxCostDelta = new Stack<>();
             indicesOfOrderInsertionImpactsWithMaxCostDelta.push(-1);
             for (Driver driver: drivers){
-                Route route = new Route(driver);
+                Route route = this.getPartialSolution().getDriverId2route().getOrDefault(
+                        driver.getId(), new Route(driver));
                 OrderInsertionImpact orderInsertionImpact = SearchUtilities.findBestOrderInsertion(
                         route, order, this.getRouteCostFunction());
                 if (orderInsertionImpacts.size() < this.getRegretHorizon()) {

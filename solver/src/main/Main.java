@@ -68,7 +68,7 @@ public class Main {
 
         /* Run the algorithm */
         SimulatedAnnealingConfigurationBuilder configurationBuilder = new SimulatedAnnealingConfigurationBuilder();
-        SimulatedAnnealingConfiguration configuration = configurationBuilder.setNumIterations(10).build();
+        SimulatedAnnealingConfiguration configuration = configurationBuilder.setNumIterations(1000).build();
         SimulatedAnnealingAlgorithm algorithm = new SimulatedAnnealingAlgorithm(instance, configuration);
         Solution solution = null;
         try {
@@ -92,6 +92,7 @@ public class Main {
                 delays.add(Math.round(orderEntry.getValue()));
             }
         }
+        System.out.println(String.format("Cost: %.2f", solution.getCost()));
         System.out.println(String.format("Number of late deliveries: %d", numLateDeliveries));
         System.out.println(String.format("Late delivered order ids: %s", lateDeliveredOrderIds.toString()));
         System.out.println(String.format("Delays (secs): %s", delays.toString()));

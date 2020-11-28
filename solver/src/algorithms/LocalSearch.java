@@ -24,6 +24,7 @@ public class LocalSearch {
         removalHeuristic.clear();
         insertionHeuristic.clear();
         PartialSolution partialSolution = removalHeuristic.run(initialSolution);
+        partialSolution.validate(this.getInstance());
         Solution candidateSolution = insertionHeuristic.run(partialSolution);
         candidateSolution.validate(this.getInstance());
         return candidateSolution;

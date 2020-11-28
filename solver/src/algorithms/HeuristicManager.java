@@ -36,20 +36,27 @@ public class HeuristicManager {
         double[] weights = new double[numHeuristics];
         double[] cumulativeProbabilities = new double[numHeuristics];
 
+        int index = 0;
+        for (Map.Entry<InsertionHeuristicType, Double> entry: this.getInsertionHeuristicType2weight().entrySet()){
+            types[index] = entry.getKey();
+            weights[index] = entry.getValue();
+            index++;
+        }
+
         double totalWeight = 0.0;
         for (double weight : weights) {
             totalWeight += weight;
         }
-        int index = 0;
+
+        index = 0;
         double cumulativeProbability = 0.0;
-        for (Map.Entry<InsertionHeuristicType, Double> entry: this.getInsertionHeuristicType2weight().entrySet()){
-            types[index] = entry.getKey();
-            weights[index] = entry.getValue();
-            double relativeWeight = entry.getValue() / totalWeight;
+        for (double weight : weights) {
+            double relativeWeight = weight / totalWeight;
             cumulativeProbability += relativeWeight;
             cumulativeProbabilities[index] = cumulativeProbability;
             index++;
         }
+
         double randomVariate = random.nextDouble();
         InsertionHeuristicType selectedHeuristicType = null;
         for (int i = 0; i < cumulativeProbabilities.length ; i++) {
@@ -67,20 +74,27 @@ public class HeuristicManager {
         double[] weights = new double[numHeuristics];
         double[] cumulativeProbabilities = new double[numHeuristics];
 
+        int index = 0;
+        for (Map.Entry<RemovalHeuristicType, Double> entry: this.getRemovalHeuristicType2weight().entrySet()){
+            types[index] = entry.getKey();
+            weights[index] = entry.getValue();
+            index++;
+        }
+
         double totalWeight = 0.0;
         for (double weight : weights) {
             totalWeight += weight;
         }
-        int index = 0;
+
+        index = 0;
         double cumulativeProbability = 0.0;
-        for (Map.Entry<RemovalHeuristicType, Double> entry: this.getRemovalHeuristicType2weight().entrySet()){
-            types[index] = entry.getKey();
-            weights[index] = entry.getValue();
-            double relativeWeight = entry.getValue() / totalWeight;
+        for (double weight : weights) {
+            double relativeWeight = weight / totalWeight;
             cumulativeProbability += relativeWeight;
             cumulativeProbabilities[index] = cumulativeProbability;
             index++;
         }
+
         double randomVariate = random.nextDouble();
         RemovalHeuristicType selectedHeuristicType = null;
         for (int i = 0; i < cumulativeProbabilities.length ; i++) {
@@ -137,8 +151,10 @@ public class HeuristicManager {
             InsertionHeuristicType heuristicType = entry.getKey();
             double currentWeight = entry.getValue();
             HeuristicStatistics statistics = this.getInsertionHeuristicType2statistics().get(heuristicType);
-            double updatedWeight = currentWeight * (1 - this.getReactionFactor()) + this.getReactionFactor() * (
-                    statistics.getScore() / statistics.getNumTimesUsed());
+            double scorePerUse = statistics.getNumTimesUsed() > 0 ?
+                    statistics.getScore() / statistics.getNumTimesUsed() : 0;
+            double updatedWeight = currentWeight * (1 - this.getReactionFactor()) +
+                    this.getReactionFactor() * scorePerUse;
             updatedInsertionHeuristicType2weight.put(heuristicType, updatedWeight);
         }
         this.setInsertionHeuristicType2weight(updatedInsertionHeuristicType2weight);
@@ -148,8 +164,10 @@ public class HeuristicManager {
             RemovalHeuristicType heuristicType = entry.getKey();
             double currentWeight = entry.getValue();
             HeuristicStatistics statistics = this.getRemovalHeuristicType2statistics().get(heuristicType);
-            double updatedWeight = currentWeight * (1 - this.getReactionFactor()) + this.getReactionFactor() * (
-                    statistics.getScore() / statistics.getNumTimesUsed());
+            double scorePerUse = statistics.getNumTimesUsed() > 0 ?
+                    statistics.getScore() / statistics.getNumTimesUsed() : 0;
+            double updatedWeight = currentWeight * (1 - this.getReactionFactor()) +
+                    this.getReactionFactor() * scorePerUse;
             updatedRemovalHeuristicType2weight.put(heuristicType, updatedWeight);
         }
         this.setRemovalHeuristicType2weight(updatedRemovalHeuristicType2weight);

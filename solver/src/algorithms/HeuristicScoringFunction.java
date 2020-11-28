@@ -18,7 +18,7 @@ public class HeuristicScoringFunction {
         return this.getRewardForNewGlobalBestSolution() * heuristicStatistics.getNumTimesWithNewGlobalBestSolution() +
                 this.getRewardForLocallyImprovedSolution() *
                         heuristicStatistics.getNumTimesWithLocallyImprovedSolution() +
-                this.getRewardForAcceptedSolution() + heuristicStatistics.getNumTimesWithAcceptedSolution();
+                this.getRewardForAcceptedSolution() * heuristicStatistics.getNumTimesWithAcceptedSolution();
     }
 
     public double getRewardForNewGlobalBestSolution() {
