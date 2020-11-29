@@ -39,6 +39,7 @@ public class SimulatedAnnealingAlgorithm implements HeuristicAlgorithm {
     public Solution run() throws UnserviceableOrderException, InfeasibleRouteException,
             InfeasibleSolutionException {
         Solution solution = findInitialSolution();
+        System.out.println(String.format("Initial solution with cost %.2f: ", solution.getCost()));
         addSolution(solution);
         initializeAnnealingScheme(solution);
         this.setBestSolution(new Solution(solution));

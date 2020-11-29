@@ -162,42 +162,49 @@ public class RegretBasedInsertionHeuristic implements InsertionHeuristic {
             Stack<Integer> driverIdsWithMaxCostDelta = new Stack<>();
             int dummyDriverId = -1;
             driverIdsWithMaxCostDelta.push(dummyDriverId);
+
+            boolean hasUpdateInRegretHorizon = false;
             for (OrderInsertionImpact orderInsertionImpact : entry.getValue()){
                 int driverId = orderInsertionImpact.getOrderInsertion().getDriverId();
                 OrderInsertionImpact updatedOrderInsertionImpact;
                 if (driverId != lastOrderInsertion.getDriverId())
                     updatedOrderInsertionImpact = orderInsertionImpact;
-                else
+                else {
                     updatedOrderInsertionImpact = SearchUtilities.findBestOrderInsertion(
                             this.getPartialSolution().getDriverId2route().get(driverId), orderId2order.get(orderId),
                             this.getRouteCostFunction());
+                    hasUpdateInRegretHorizon = true;
+                }
                 driverId2updatedOrderInsertionImpact.put(driverId, updatedOrderInsertionImpact);
                 if (updatedOrderInsertionImpact.getCostDelta() > maxCostDeltas.peek()) {
                     maxCostDeltas.push(updatedOrderInsertionImpact.getCostDelta());
                     driverIdsWithMaxCostDelta.push(driverId);
                 }
             }
-            // check if another route has become one the current best routes
-            for (Driver driver : drivers){
-                int driverId = driver.getId();
-                if (driverId2updatedOrderInsertionImpact.containsKey(driverId))
-                    continue;
-                Route routeOfDriver = this.getPartialSolution().getDriverId2route().get(driverId);
-                if (routeOfDriver == null)
-                    routeOfDriver = new Route(driver);
-                OrderInsertionImpact orderInsertionImpact = SearchUtilities.findBestOrderInsertion(
-                        routeOfDriver, orderId2order.get(orderId), this.getRouteCostFunction());
-                if (orderInsertionImpact.getCostDelta() < maxCostDeltas.peek()){
-                    maxCostDeltas.pop();
-                    int driverIdToRemove = driverIdsWithMaxCostDelta.pop();
-                    driverId2updatedOrderInsertionImpact.remove(driverIdToRemove);
-                    driverId2updatedOrderInsertionImpact.put(driverId, orderInsertionImpact);
-                    if (orderInsertionImpact.getCostDelta() > maxCostDeltas.peek()) {
-                        maxCostDeltas.push(orderInsertionImpact.getCostDelta());
-                        driverIdsWithMaxCostDelta.push(driverId);
+            // check if another route has become one of the current best routes
+            if (hasUpdateInRegretHorizon){
+                for (Driver driver : drivers){
+                    int driverId = driver.getId();
+                    if (driverId2updatedOrderInsertionImpact.containsKey(driverId))
+                        continue;
+                    Route routeOfDriver = this.getPartialSolution().getDriverId2route().get(driverId);
+                    if (routeOfDriver == null)
+                        routeOfDriver = new Route(driver);
+                    OrderInsertionImpact orderInsertionImpact = SearchUtilities.findBestOrderInsertion(
+                            routeOfDriver, orderId2order.get(orderId), this.getRouteCostFunction());
+                    if (orderInsertionImpact.getCostDelta() < maxCostDeltas.peek()){
+                        maxCostDeltas.pop();
+                        int driverIdToRemove = driverIdsWithMaxCostDelta.pop();
+                        driverId2updatedOrderInsertionImpact.remove(driverIdToRemove);
+                        driverId2updatedOrderInsertionImpact.put(driverId, orderInsertionImpact);
+                        if (orderInsertionImpact.getCostDelta() > maxCostDeltas.peek()) {
+                            maxCostDeltas.push(orderInsertionImpact.getCostDelta());
+                            driverIdsWithMaxCostDelta.push(driverId);
+                        }
                     }
                 }
             }
+
             List<OrderInsertionImpact> updatedOrderInsertionImpacts = new ArrayList<>(
                     driverId2updatedOrderInsertionImpact.values());
             updatedOrderId2orderInsertionImpacts.put(orderId, updatedOrderInsertionImpacts);

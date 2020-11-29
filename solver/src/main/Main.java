@@ -66,6 +66,7 @@ public class Main {
 
         /* Read input data */
         Instance instance = createInstance(inputPath, driverFileName, orderFileName);
+        System.out.println("Instance created...");
 
         /* Run the algorithm */
         SimulatedAnnealingConfigurationBuilder configurationBuilder = new SimulatedAnnealingConfigurationBuilder();
