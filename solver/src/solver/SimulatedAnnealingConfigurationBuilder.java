@@ -33,7 +33,7 @@ public class SimulatedAnnealingConfigurationBuilder {
         this.coolingRate = 0.98;
         this.constructionHeuristicType = InsertionHeuristicType.REGRET_BASED_INSERTION;
         this.numIterations = 1000;
-        this.numOrdersToRemove = 10;
+        this.numOrdersToRemove = 20;
         this.randomizationCoefficient = 3;
         this.reactionFactor = 0.1;
         this.regretHorizon = 4;

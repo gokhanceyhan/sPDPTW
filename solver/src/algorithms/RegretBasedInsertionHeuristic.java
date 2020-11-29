@@ -16,14 +16,16 @@ public class RegretBasedInsertionHeuristic implements InsertionHeuristic {
 
     // Each order insertion impact represents the best insertion to the route of a different driver
     private Instance instance;
-    private Map<Integer, List<OrderInsertionImpact>> orderId2orderInsertionImpacts;
+    private Map<Integer, List<OrderInsertionImpact>> orderId2bestOrderInsertionImpacts;
+    private Map<Integer, List<OrderInsertionImpact>> orderId2candidateOrderInsertionImpacts;
     private int regretHorizon;
     private RouteCostFunction routeCostFunction;
     private PartialSolution partialSolution;
 
     public RegretBasedInsertionHeuristic(Instance instance, RouteCostFunction routeCostFunction, int regretHorizon) {
         this.instance = instance;
-        this.orderId2orderInsertionImpacts = new HashMap<>();
+        this.orderId2bestOrderInsertionImpacts = new HashMap<>();
+        this.orderId2candidateOrderInsertionImpacts = new HashMap<>();
         assert regretHorizon > 1;
         this.regretHorizon = regretHorizon;
         this.routeCostFunction = routeCostFunction;
@@ -41,12 +43,12 @@ public class RegretBasedInsertionHeuristic implements InsertionHeuristic {
         while (pendingOrders.size() > 0){
             Map<Integer, Double> orderId2regret = new HashMap<>();
             for (Order order : pendingOrders){
-                double regret = calculateRegret(this.getOrderId2orderInsertionImpacts().get(order.getId()));
+                double regret = calculateRegret(this.getOrderId2bestOrderInsertionImpacts().get(order.getId()));
                 orderId2regret.put(order.getId(), regret);
             }
             int nextOrderId = findBestOrder(orderId2regret);
             OrderInsertionImpact bestOrderInsertionImpact = findBestOrderInsertionImpact(
-                    nextOrderId, this.getOrderId2orderInsertionImpacts().get(nextOrderId));
+                    nextOrderId, this.getOrderId2bestOrderInsertionImpacts().get(nextOrderId));
             int assignedDriverId = bestOrderInsertionImpact.getOrderInsertion().getDriverId();
             this.getPartialSolution().updateRoute(assignedDriverId, bestOrderInsertionImpact.getRoute());
             updateOrderInsertionImpacts(
@@ -60,7 +62,7 @@ public class RegretBasedInsertionHeuristic implements InsertionHeuristic {
 
     public void clear(){
         this.setPartialSolution(null);
-        this.getOrderId2orderInsertionImpacts().clear();
+        this.getOrderId2bestOrderInsertionImpacts().clear();
     }
 
     @Override
@@ -111,9 +113,11 @@ public class RegretBasedInsertionHeuristic implements InsertionHeuristic {
     }
 
     private void initializeOrderInsertionImpacts(List<Order> orders, List<Driver> drivers){
-        Map<Integer, List<OrderInsertionImpact>> orderId2orderInsertionImpacts = new HashMap<>();
+        Map<Integer, List<OrderInsertionImpact>> orderId2bestOrderInsertionImpacts = new HashMap<>();
+        Map<Integer, List<OrderInsertionImpact>> orderId2candidateOrderInsertionImpacts = new HashMap<>();
         for (Order order : orders){
-            List<OrderInsertionImpact> orderInsertionImpacts = new ArrayList<>();
+            List<OrderInsertionImpact> bestOrderInsertionImpacts = new ArrayList<>();
+            List<OrderInsertionImpact> candidateOrderInsertionImpacts = new ArrayList<>();
             Stack<Double> maxCostDeltas = new Stack<>();
             maxCostDeltas.push(Double.NEGATIVE_INFINITY);
             Stack<Integer> indicesOfOrderInsertionImpactsWithMaxCostDelta = new Stack<>();
@@ -123,94 +127,103 @@ public class RegretBasedInsertionHeuristic implements InsertionHeuristic {
                         driver.getId(), new Route(driver));
                 OrderInsertionImpact orderInsertionImpact = SearchUtilities.findBestOrderInsertion(
                         route, order, this.getRouteCostFunction());
-                if (orderInsertionImpacts.size() < this.getRegretHorizon()) {
-                    orderInsertionImpacts.add(orderInsertionImpact);
+                if (bestOrderInsertionImpacts.size() < this.getRegretHorizon()) {
+                    bestOrderInsertionImpacts.add(orderInsertionImpact);
                     if (orderInsertionImpact.getCostDelta() > maxCostDeltas.peek()) {
                         maxCostDeltas.push(orderInsertionImpact.getCostDelta());
-                        int indexOfInsertion = orderInsertionImpacts.size() - 1;
+                        int indexOfInsertion = bestOrderInsertionImpacts.size() - 1;
                         indicesOfOrderInsertionImpactsWithMaxCostDelta.push(indexOfInsertion);
                     }
                 }
                 else if (orderInsertionImpact.getCostDelta() < maxCostDeltas.peek()){
                     maxCostDeltas.pop();
                     int indexToRemove = indicesOfOrderInsertionImpactsWithMaxCostDelta.pop();
-                    orderInsertionImpacts.remove(indexToRemove);
-                    orderInsertionImpacts.add(orderInsertionImpact);
+                    OrderInsertionImpact removedOrderInsertionImpact = bestOrderInsertionImpacts.remove(indexToRemove);
+                    candidateOrderInsertionImpacts.add(removedOrderInsertionImpact);
+                    bestOrderInsertionImpacts.add(orderInsertionImpact);
                     if (orderInsertionImpact.getCostDelta() > maxCostDeltas.peek()) {
                         maxCostDeltas.push(orderInsertionImpact.getCostDelta());
-                        int indexOfInsertion = orderInsertionImpacts.size() - 1;
+                        int indexOfInsertion = bestOrderInsertionImpacts.size() - 1;
                         indicesOfOrderInsertionImpactsWithMaxCostDelta.push(indexOfInsertion);
                     }
                 }
+                else
+                    candidateOrderInsertionImpacts.add(orderInsertionImpact);
             }
-            orderId2orderInsertionImpacts.put(order.getId(), orderInsertionImpacts);
+            orderId2bestOrderInsertionImpacts.put(order.getId(), bestOrderInsertionImpacts);
+            orderId2candidateOrderInsertionImpacts.put(order.getId(), candidateOrderInsertionImpacts);
         }
-        this.setOrderId2orderInsertionImpacts(orderId2orderInsertionImpacts);
+        this.setOrderId2bestOrderInsertionImpacts(orderId2bestOrderInsertionImpacts);
+        this.setOrderId2candidateOrderInsertionImpacts(orderId2candidateOrderInsertionImpacts);
     }
 
     private void updateOrderInsertionImpacts(
             Map<Integer, Order> orderId2order, List<Driver> drivers, OrderInsertion lastOrderInsertion){
-        Map<Integer, List<OrderInsertionImpact>> updatedOrderId2orderInsertionImpacts = new HashMap<>();
-        for (Map.Entry<Integer, List<OrderInsertionImpact>> entry: this.getOrderId2orderInsertionImpacts().entrySet()){
+        Map<Integer, Driver> driverId2driver = drivers.stream().collect(
+                Collectors.toMap(Driver::getId, driver -> driver));
+        Map<Integer, List<OrderInsertionImpact>> updatedOrderId2bestOrderInsertionImpacts = new HashMap<>();
+        Map<Integer, List<OrderInsertionImpact>> updatedOrderId2candidateOrderInsertionImpacts = new HashMap<>();
+        for (Map.Entry<Integer, List<OrderInsertionImpact>> entry:
+                this.getOrderId2bestOrderInsertionImpacts().entrySet()){
             int orderId = entry.getKey();
             if (orderId == lastOrderInsertion.getOrderId())
                 continue;
             // first update for the current best routes
-            Map<Integer, OrderInsertionImpact> driverId2updatedOrderInsertionImpact = new HashMap<>();
+            List<OrderInsertionImpact> updatedBestOrderInsertionImpacts = new ArrayList<>();
             Stack<Double> maxCostDeltas = new Stack<>();
             maxCostDeltas.push(Double.NEGATIVE_INFINITY);
-            Stack<Integer> driverIdsWithMaxCostDelta = new Stack<>();
-            int dummyDriverId = -1;
-            driverIdsWithMaxCostDelta.push(dummyDriverId);
-
-            boolean hasUpdateInRegretHorizon = false;
+            Stack<Integer> indicesOfOrderInsertionImpactsWithMaxCostDelta = new Stack<>();
+            indicesOfOrderInsertionImpactsWithMaxCostDelta.push(-1);
             for (OrderInsertionImpact orderInsertionImpact : entry.getValue()){
                 int driverId = orderInsertionImpact.getOrderInsertion().getDriverId();
                 OrderInsertionImpact updatedOrderInsertionImpact;
                 if (driverId != lastOrderInsertion.getDriverId())
                     updatedOrderInsertionImpact = orderInsertionImpact;
                 else {
+                    Route route = this.getPartialSolution().getDriverId2route().get(driverId);
                     updatedOrderInsertionImpact = SearchUtilities.findBestOrderInsertion(
-                            this.getPartialSolution().getDriverId2route().get(driverId), orderId2order.get(orderId),
-                            this.getRouteCostFunction());
-                    hasUpdateInRegretHorizon = true;
+                            route, orderId2order.get(orderId), this.getRouteCostFunction());
                 }
-                driverId2updatedOrderInsertionImpact.put(driverId, updatedOrderInsertionImpact);
+                updatedBestOrderInsertionImpacts.add(updatedOrderInsertionImpact);
                 if (updatedOrderInsertionImpact.getCostDelta() > maxCostDeltas.peek()) {
                     maxCostDeltas.push(updatedOrderInsertionImpact.getCostDelta());
-                    driverIdsWithMaxCostDelta.push(driverId);
+                    int indexOfInsertion = updatedBestOrderInsertionImpacts.size() - 1;
+                    indicesOfOrderInsertionImpactsWithMaxCostDelta.push(indexOfInsertion);
                 }
             }
-            // check if another route has become one of the current best routes
-            if (hasUpdateInRegretHorizon){
-                for (Driver driver : drivers){
-                    int driverId = driver.getId();
-                    if (driverId2updatedOrderInsertionImpact.containsKey(driverId))
-                        continue;
-                    Route routeOfDriver = this.getPartialSolution().getDriverId2route().get(driverId);
-                    if (routeOfDriver == null)
-                        routeOfDriver = new Route(driver);
-                    OrderInsertionImpact orderInsertionImpact = SearchUtilities.findBestOrderInsertion(
-                            routeOfDriver, orderId2order.get(orderId), this.getRouteCostFunction());
-                    if (orderInsertionImpact.getCostDelta() < maxCostDeltas.peek()){
-                        maxCostDeltas.pop();
-                        int driverIdToRemove = driverIdsWithMaxCostDelta.pop();
-                        driverId2updatedOrderInsertionImpact.remove(driverIdToRemove);
-                        driverId2updatedOrderInsertionImpact.put(driverId, orderInsertionImpact);
-                        if (orderInsertionImpact.getCostDelta() > maxCostDeltas.peek()) {
-                            maxCostDeltas.push(orderInsertionImpact.getCostDelta());
-                            driverIdsWithMaxCostDelta.push(driverId);
-                        }
+            // check if a candidate route has become one of the current best routes
+            List<OrderInsertionImpact> updatedCandidateOrderInsertionImpacts = new ArrayList<>();
+            for (OrderInsertionImpact orderInsertionImpact :
+                    this.getOrderId2candidateOrderInsertionImpacts().get(orderId)){
+                int driverId = orderInsertionImpact.getOrderInsertion().getDriverId();
+                OrderInsertionImpact updatedOrderInsertionImpact;
+                if (driverId != lastOrderInsertion.getDriverId())
+                    updatedOrderInsertionImpact = orderInsertionImpact;
+                else{
+                    Route route = this.getPartialSolution().getDriverId2route().get(driverId);
+                    updatedOrderInsertionImpact = SearchUtilities.findBestOrderInsertion(
+                            route, orderId2order.get(orderId), this.getRouteCostFunction());
+                }
+                updatedCandidateOrderInsertionImpacts.add(updatedOrderInsertionImpact);
+                if (updatedOrderInsertionImpact.getCostDelta() < maxCostDeltas.peek()){
+                    maxCostDeltas.pop();
+                    int indexToRemove = indicesOfOrderInsertionImpactsWithMaxCostDelta.pop();
+                    OrderInsertionImpact removedOrderInsertionImpact = updatedBestOrderInsertionImpacts.remove(
+                            indexToRemove);
+                    updatedCandidateOrderInsertionImpacts.add(removedOrderInsertionImpact);
+                    updatedBestOrderInsertionImpacts.add(updatedOrderInsertionImpact);
+                    if (updatedOrderInsertionImpact.getCostDelta() > maxCostDeltas.peek()) {
+                        maxCostDeltas.push(updatedOrderInsertionImpact.getCostDelta());
+                        int indexOfInsertion = updatedBestOrderInsertionImpacts.size() - 1;
+                        indicesOfOrderInsertionImpactsWithMaxCostDelta.push(indexOfInsertion);
                     }
                 }
             }
-
-            List<OrderInsertionImpact> updatedOrderInsertionImpacts = new ArrayList<>(
-                    driverId2updatedOrderInsertionImpact.values());
-            updatedOrderId2orderInsertionImpacts.put(orderId, updatedOrderInsertionImpacts);
-
+            updatedOrderId2bestOrderInsertionImpacts.put(orderId, updatedBestOrderInsertionImpacts);
+            updatedOrderId2candidateOrderInsertionImpacts.put(orderId, updatedCandidateOrderInsertionImpacts);
         }
-        this.setOrderId2orderInsertionImpacts(updatedOrderId2orderInsertionImpacts);
+        this.setOrderId2bestOrderInsertionImpacts(updatedOrderId2bestOrderInsertionImpacts);
+        this.setOrderId2candidateOrderInsertionImpacts(updatedOrderId2candidateOrderInsertionImpacts);
     }
 
     public Instance getInstance() {
@@ -221,12 +234,22 @@ public class RegretBasedInsertionHeuristic implements InsertionHeuristic {
         this.instance = instance;
     }
 
-    public Map<Integer, List<OrderInsertionImpact>> getOrderId2orderInsertionImpacts() {
-        return orderId2orderInsertionImpacts;
+    public Map<Integer, List<OrderInsertionImpact>> getOrderId2bestOrderInsertionImpacts() {
+        return orderId2bestOrderInsertionImpacts;
     }
 
-    public void setOrderId2orderInsertionImpacts(Map<Integer, List<OrderInsertionImpact>> orderId2orderInsertionImpacts) {
-        this.orderId2orderInsertionImpacts = orderId2orderInsertionImpacts;
+    public void setOrderId2bestOrderInsertionImpacts(
+            Map<Integer, List<OrderInsertionImpact>> orderId2bestOrderInsertionImpacts) {
+        this.orderId2bestOrderInsertionImpacts = orderId2bestOrderInsertionImpacts;
+    }
+
+    public Map<Integer, List<OrderInsertionImpact>> getOrderId2candidateOrderInsertionImpacts() {
+        return orderId2candidateOrderInsertionImpacts;
+    }
+
+    public void setOrderId2candidateOrderInsertionImpacts(
+            Map<Integer, List<OrderInsertionImpact>> orderId2candidateOrderInsertionImpacts) {
+        this.orderId2candidateOrderInsertionImpacts = orderId2candidateOrderInsertionImpacts;
     }
 
     public PartialSolution getPartialSolution() {
