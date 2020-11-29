@@ -1,6 +1,9 @@
 package utilities;
 
+import common.ArcId;
 import common.Location;
+import common.Task;
+import input.Instance;
 
 public class DistanceUtilities {
 
@@ -18,4 +21,5 @@ public class DistanceUtilities {
         double deltaZ = Math.sin(bLatitudeInRadians) - Math.sin(aLatitudeInRadians);
         return Math.sqrt(Math.pow(deltaX, 2) + Math.pow(deltaY, 2) + Math.pow(deltaZ, 2)) * EARTH_RADIUS_IN_KM;
     }
+
 }

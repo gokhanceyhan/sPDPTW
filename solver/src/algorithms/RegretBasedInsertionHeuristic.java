@@ -122,7 +122,7 @@ public class RegretBasedInsertionHeuristic implements InsertionHeuristic {
                 Route route = this.getPartialSolution().getDriverId2route().getOrDefault(
                         driver.getId(), new Route(driver));
                 OrderInsertionImpact orderInsertionImpact = SearchUtilities.findBestOrderInsertion(
-                        route, order, this.getRouteCostFunction());
+                        this.getInstance(), route, order, this.getRouteCostFunction());
                 if (orderInsertionImpacts.size() < this.getRegretHorizon()) {
                     orderInsertionImpacts.add(orderInsertionImpact);
                     if (orderInsertionImpact.getCostDelta() > maxCostDeltas.peek()) {
@@ -169,8 +169,8 @@ public class RegretBasedInsertionHeuristic implements InsertionHeuristic {
                     updatedOrderInsertionImpact = orderInsertionImpact;
                 else
                     updatedOrderInsertionImpact = SearchUtilities.findBestOrderInsertion(
-                            this.getPartialSolution().getDriverId2route().get(driverId), orderId2order.get(orderId),
-                            this.getRouteCostFunction());
+                            this.getInstance(), this.getPartialSolution().getDriverId2route().get(driverId),
+                            orderId2order.get(orderId), this.getRouteCostFunction());
                 driverId2updatedOrderInsertionImpact.put(driverId, updatedOrderInsertionImpact);
                 if (updatedOrderInsertionImpact.getCostDelta() > maxCostDeltas.peek()) {
                     maxCostDeltas.push(updatedOrderInsertionImpact.getCostDelta());
@@ -186,7 +186,7 @@ public class RegretBasedInsertionHeuristic implements InsertionHeuristic {
                 if (routeOfDriver == null)
                     routeOfDriver = new Route(driver);
                 OrderInsertionImpact orderInsertionImpact = SearchUtilities.findBestOrderInsertion(
-                        routeOfDriver, orderId2order.get(orderId), this.getRouteCostFunction());
+                        this.getInstance(), routeOfDriver, orderId2order.get(orderId), this.getRouteCostFunction());
                 if (orderInsertionImpact.getCostDelta() < maxCostDeltas.peek()){
                     maxCostDeltas.pop();
                     int driverIdToRemove = driverIdsWithMaxCostDelta.pop();

@@ -37,7 +37,7 @@ public class RandomRemovalHeuristic implements RemovalHeuristic {
             int orderId = order.getId();
             int driverId = orderId2driverId.get(orderId);
             Route route = solution.getDriverId2route().get(driverId);
-            route.remove(orderId);
+            route.remove(this.getInstance(), orderId);
             route.evaluate(this.getRouteCostFunction());
         }
         return new PartialSolution(solution.getDriverId2route(), selectedOrders);

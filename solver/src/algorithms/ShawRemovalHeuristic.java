@@ -1,5 +1,7 @@
 package algorithms;
 
+import common.Arc;
+import common.ArcId;
 import common.Order;
 import common.RouteCostFunction;
 import exceptions.InfeasibleRouteException;
@@ -58,7 +60,7 @@ public class ShawRemovalHeuristic implements RemovalHeuristic {
         for (Order order : selectedOrders){
             int assignedDriverId = orderId2assignedDriverId.get(order.getId());
             Route route = driverId2updatedRoute.get(assignedDriverId);
-            route.remove(order.getId());
+            route.remove(this.getInstance(), order.getId());
         }
 
         for (Map.Entry<Integer, Route> entry : driverId2updatedRoute.entrySet())
@@ -125,10 +127,10 @@ public class ShawRemovalHeuristic implements RemovalHeuristic {
                 routeOfFirstOrder.getOrderId2deliveryTaskIndex().get(firstOrder.getId())) -
                 routeOfSecondOrder.getTaskCompletionTimes().get(
                         routeOfSecondOrder.getOrderId2deliveryTaskIndex().get(secondOrder.getId())));
-        double distanceBetweenPickUpTasks = DistanceUtilities.distanceInKm(
-                firstOrder.getPickup().getLocation(), secondOrder.getPickup().getLocation());
-        double distanceBetweenDeliveryTasks = DistanceUtilities.distanceInKm(
-                firstOrder.getDelivery().getLocation(), secondOrder.getDelivery().getLocation());
+        Arc arcBetweenPickupTasks = this.getInstance().getArc(firstOrder.getPickup(), secondOrder.getPickup());
+        double distanceBetweenPickUpTasks = arcBetweenPickupTasks.getDistance();
+        Arc arcBetweenDeliveryTasks = this.getInstance().getArc(firstOrder.getDelivery(), secondOrder.getDelivery());
+        double distanceBetweenDeliveryTasks = arcBetweenDeliveryTasks.getDistance();
         double differenceBetweenLoads = Math.abs(
                 firstOrder.getPickup().getNumItems() - secondOrder.getPickup().getNumItems());
 

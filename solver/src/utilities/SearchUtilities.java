@@ -4,6 +4,7 @@ import algorithms.OrderInsertion;
 import algorithms.OrderInsertionImpact;
 import common.*;
 import exceptions.InfeasibleRouteException;
+import input.Instance;
 import output.Route;
 
 import java.util.*;
@@ -11,24 +12,26 @@ import java.util.*;
 public class SearchUtilities {
 
     public static Route insertOrder(
-            Route initialRoute, Order order, OrderInsertion orderInsertion, RouteCostFunction costFunction) throws
+            Instance instance, Route initialRoute, Order order, OrderInsertion orderInsertion,
+            RouteCostFunction costFunction) throws
             InfeasibleRouteException {
         Route route = new Route(initialRoute);
-        route.insert(order, orderInsertion);
+        route.insert(instance, order, orderInsertion);
         route.evaluate(costFunction);
         return route;
     }
 
-    public static Route removeOrder(Route initialRoute, Integer orderId, RouteCostFunction costFunction) throws
+    public static Route removeOrder(
+            Instance instance, Route initialRoute, Integer orderId, RouteCostFunction costFunction) throws
             InfeasibleRouteException {
         Route route = new Route(initialRoute);
-        route.remove(orderId);
+        route.remove(instance, orderId);
         route.evaluate(costFunction);
         return route;
     }
 
     public static OrderInsertionImpact findBestOrderInsertion(
-            Route route, Order order, RouteCostFunction costFunction){
+            Instance instance, Route route, Order order, RouteCostFunction costFunction){
         int numTasks = route.getTasks().size();
         double minCostDelta = Double.POSITIVE_INFINITY;
         OrderInsertion bestOrderInsertion = null;
@@ -39,7 +42,7 @@ public class SearchUtilities {
                         deliveryIndex, route.getDriver().getId(), order.getId(), pickUpIndex);
                 Route newRoute;
                 try {
-                    newRoute = insertOrder(route, order, orderInsertion, costFunction);
+                    newRoute = insertOrder(instance, route, order, orderInsertion, costFunction);
                 } catch (InfeasibleRouteException e) {
                     continue;
                 }
@@ -52,11 +55,6 @@ public class SearchUtilities {
             }
         }
         return new OrderInsertionImpact(minCostDelta, bestOrderInsertion, bestRoute);
-    }
-
-    public static boolean isCapacitySufficient(List<Integer> driverLoads, int numItems, int capacity){
-        int maxLoad = Collections.max(driverLoads);
-        return maxLoad + numItems <= capacity;
     }
 
 }

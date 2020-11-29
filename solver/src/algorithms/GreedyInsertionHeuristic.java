@@ -109,7 +109,7 @@ public class GreedyInsertionHeuristic implements InsertionHeuristic {
                 Route route = this.getPartialSolution().getDriverId2route().getOrDefault(
                         driver.getId(), new Route(driver));
                 OrderInsertionImpact orderInsertionImpact = SearchUtilities.findBestOrderInsertion(
-                        route, order, this.getRouteCostFunction());
+                        this.getInstance(), route, order, this.getRouteCostFunction());
                 orderIdAndDriverId2orderInsertionImpact.put(orderIdAndDriverId, orderInsertionImpact);
             }
         }
@@ -129,8 +129,8 @@ public class GreedyInsertionHeuristic implements InsertionHeuristic {
                 continue;
             }
             OrderInsertionImpact updatedOrderInsertionImpact = SearchUtilities.findBestOrderInsertion(
-                    this.getPartialSolution().getDriverId2route().get(driverId), orderId2order.get(orderId),
-                    this.getRouteCostFunction());
+                    this.getInstance(), this.getPartialSolution().getDriverId2route().get(driverId),
+                    orderId2order.get(orderId), this.getRouteCostFunction());
             updatedOrderIdAndDriverId2orderInsertionImpact.put(entry.getKey(), updatedOrderInsertionImpact);
         }
         this.setOrderIdAndDriverId2orderInsertionImpact(updatedOrderIdAndDriverId2orderInsertionImpact);

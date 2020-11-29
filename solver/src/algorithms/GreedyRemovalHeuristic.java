@@ -49,7 +49,7 @@ public class GreedyRemovalHeuristic implements RemovalHeuristic {
             OrderRemovalImpact orderRemovalImpact = this.getOrderId2orderRemovalImpact().get(selectedOrderId);
             int driverIdToUpdate = orderRemovalImpact.getDriverId();
             Route routeToUpdate = this.getPartialSolution().getDriverId2route().get(driverIdToUpdate);
-            routeToUpdate.remove(selectedOrderId);
+            routeToUpdate.remove(this.getInstance(), selectedOrderId);
             routeToUpdate.evaluate(this.getRouteCostFunction());
             this.getPartialSolution().getPendingOrders().add(selectedOrder);
             numOrdersToRemove--;
@@ -85,7 +85,8 @@ public class GreedyRemovalHeuristic implements RemovalHeuristic {
             }
             Route route = this.getPartialSolution().getDriverId2route().get(driverId);
             double currentCost = route.getCost();
-            Route updatedRoute = SearchUtilities.removeOrder(route, orderId, this.getRouteCostFunction());
+            Route updatedRoute = SearchUtilities.removeOrder(
+                    this.getInstance(), route, orderId, this.getRouteCostFunction());
             double costDelta = updatedRoute.getCost() - currentCost;
             OrderRemovalImpact updatedOrderRemovalImpact = new OrderRemovalImpact(driverId, orderId, costDelta);
             updatedOrderId2orderRemovalImpact.put(orderId, updatedOrderRemovalImpact);
@@ -109,7 +110,8 @@ public class GreedyRemovalHeuristic implements RemovalHeuristic {
             Route route = entry.getValue();
             double currentCost = route.getCost();
             for (Integer orderId : route.getOrderIds()){
-                Route updatedRoute = SearchUtilities.removeOrder(route, orderId, this.getRouteCostFunction());
+                Route updatedRoute = SearchUtilities.removeOrder(
+                        this.getInstance(), route, orderId, this.getRouteCostFunction());
                 double costDelta = updatedRoute.getCost() - currentCost;
                 OrderRemovalImpact orderRemovalImpact = new OrderRemovalImpact(driverId, orderId, costDelta);
                 orderId2orderRemovalImpact.put(orderId, orderRemovalImpact);
