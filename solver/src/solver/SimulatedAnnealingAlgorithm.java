@@ -45,11 +45,8 @@ public class SimulatedAnnealingAlgorithm implements HeuristicAlgorithm {
         this.setBestSolution(new Solution(solution));
         int iterationIndex = 1;
         while (iterationIndex < this.getConfiguration().getNumIterations()){
-            // System.out.println(String.format("Running iteration %d of the SA algorithm", iterationIndex));
             if (iterationIndex % this.getConfiguration().getSegmentSize() == 0){
-                System.out.println(String.format("Iteration %d: ", iterationIndex));
-                System.out.println(
-                        String.format("Current temperature %.2f", this.getAnnealingScheme().getCurrentTemperature()));
+                System.out.println(String.format("Running iteration %d...", iterationIndex));
                 this.getHeuristicManager().updateHeuristicWeights();
                 this.getHeuristicManager().clearHeuristicStatistics();
             }
@@ -63,12 +60,8 @@ public class SimulatedAnnealingAlgorithm implements HeuristicAlgorithm {
             this.getHeuristicManager().updateHeuristicStatistics(localSearchResult);
             if (localSearchResult.isNewGlobalBestSolution()) {
                 this.setBestSolution(candidateSolution);
-                System.out.println(String.format("Iteration %d: ", iterationIndex));
                 System.out.println(String.format("New global best solution: %.2f", candidateSolution.getCost()));
-                solution = candidateSolution;
             }
-            if (localSearchResult.isLocallyImprovedSolution())
-                //System.out.println(String.format("New locally improved solution: %.2f", candidateSolution.getCost()));
             if (localSearchResult.isNewGlobalBestSolution() || localSearchResult.isLocallyImprovedSolution() ||
                     localSearchResult.isNewSolution())
                 addSolution(candidateSolution);
@@ -76,7 +69,9 @@ public class SimulatedAnnealingAlgorithm implements HeuristicAlgorithm {
             this.getAnnealingScheme().updateTemperature();
             iterationIndex ++;
         }
+        /*
         System.out.println(String.format("Ending temperature %.2f", this.getAnnealingScheme().getCurrentTemperature()));
+        */
         return this.getBestSolution();
     }
 

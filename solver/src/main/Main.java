@@ -73,16 +73,24 @@ public class Main {
         SimulatedAnnealingConfiguration configuration = configurationBuilder.build();
         SimulatedAnnealingAlgorithm algorithm = new SimulatedAnnealingAlgorithm(instance, configuration);
         Solution solution = null;
-        try {
-            solution = algorithm.run();
-        } catch (UnserviceableOrderException | InfeasibleRouteException | InfeasibleSolutionException e) {
-            e.printStackTrace();
+
+        int numTrials = 0;
+        Solution bestSolution = null;
+        while (numTrials < 1){
+            try {
+                solution = algorithm.run();
+            } catch (UnserviceableOrderException | InfeasibleRouteException | InfeasibleSolutionException e) {
+                e.printStackTrace();
+            }
+            if (bestSolution == null || solution.getCost() < bestSolution.getCost())
+                bestSolution = solution;
+            numTrials ++;
         }
 
-        assert solution != null;
+        assert bestSolution != null;
 
         /* Print the best solution */
-        solution.printSolution();
+        bestSolution.printSolution();
 
         /* Generate the output file */
         String outputFilePath = inputPath + "results.csv";
