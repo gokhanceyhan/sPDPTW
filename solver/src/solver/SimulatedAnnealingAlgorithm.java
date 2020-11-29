@@ -186,8 +186,8 @@ public class SimulatedAnnealingAlgorithm implements HeuristicAlgorithm {
     }
 
     private void initializeOrderSimilarityFunction(){
-        ScalingFunction taskCompletionTimeDifferenceScalingFunction = new ScalingFunction(1e4, 0);
-        ScalingFunction taskDistanceScalingFunction = new ScalingFunction(100, 0);
+        ScalingFunction taskCompletionTimeDifferenceScalingFunction = new ScalingFunction(2000, 0);
+        ScalingFunction taskDistanceScalingFunction = new ScalingFunction(10, 0);
         ScalingFunction taskLoadDifferenceScalingFunction = new ScalingFunction(20, 0);
         OrderSimilarityFunction orderSimilarityFunction = new OrderSimilarityFunction(
                 taskCompletionTimeDifferenceScalingFunction, taskDistanceScalingFunction,

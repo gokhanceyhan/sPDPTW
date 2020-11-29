@@ -69,7 +69,6 @@ public class ShawRemovalHeuristic implements RemovalHeuristic {
 
     @Override
     public void clear(){
-
     }
 
     @Override
@@ -106,7 +105,8 @@ public class ShawRemovalHeuristic implements RemovalHeuristic {
             orderSimilarities.add(orderSimilarity);
         }
         Collections.sort(orderSimilarities);
-        int selectedIndex = (int) (Math.pow(random.nextDouble(), this.getRandomizationCoefficient()) *
+        double randomVariate = random.nextDouble();
+        int selectedIndex = (int) (Math.pow(randomVariate, this.getRandomizationCoefficient()) *
                 orderSimilarities.size());
         OrderSimilarity bestOrderSimilarity = orderSimilarities.get(selectedIndex);
         int nextOrderId = bestOrderSimilarity.getFirstOrderId() == baseOrder.getId() ?

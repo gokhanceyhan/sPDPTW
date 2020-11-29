@@ -80,7 +80,7 @@ public class RegretBasedInsertionHeuristic implements InsertionHeuristic {
                 maxRegret = entry.getValue();
             }
         }
-        assert bestOrderId != 1;
+        assert bestOrderId != -1;
         return bestOrderId;
     }
 
