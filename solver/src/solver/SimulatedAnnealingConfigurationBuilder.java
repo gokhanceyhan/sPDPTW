@@ -32,8 +32,8 @@ public class SimulatedAnnealingConfigurationBuilder {
     public SimulatedAnnealingConfigurationBuilder() {
         this.coolingRate = 0.99;
         this.constructionHeuristicType = InsertionHeuristicType.REGRET_BASED_INSERTION;
-        this.numIterations = 500;
-        this.numOrdersToRemove = 20;
+        this.numIterations = 1000;
+        this.numOrdersToRemove = 10;
         this.randomizationCoefficient = 3;
         this.reactionFactor = 0.1;
         this.regretHorizon = 4;
@@ -44,9 +44,9 @@ public class SimulatedAnnealingConfigurationBuilder {
         this.rewardForNewGlobalBestSolution = 33;
         this.rewardForLocallyImprovedSolution = 13;
         this.rewardForAcceptedSolution = 9;
-        this.distanceTravelledCostWeight = 0;
-        this.numLateDeliveriesCostWeight = 0;
-        this.totalDeliveryDelayCostWeight = 1;
+        this.distanceTravelledCostWeight = 1;
+        this.numLateDeliveriesCostWeight = 1e6;
+        this.totalDeliveryDelayCostWeight = 1e3;
         this.travelTimeCostWeight = 0;
     }
 

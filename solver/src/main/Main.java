@@ -79,6 +79,7 @@ public class Main {
         while (numTrials < 1){
             try {
                 solution = algorithm.run();
+                solution.printSolution();
             } catch (UnserviceableOrderException | InfeasibleRouteException | InfeasibleSolutionException e) {
                 e.printStackTrace();
             }
