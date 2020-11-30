@@ -5,15 +5,10 @@ package main;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
-import algorithms.*;
 import common.Driver;
 import common.Order;
-import common.RouteCostFunction;
-import common.ScalingFunction;
 import exceptions.*;
 import input.CsvInputDataConsumer;
 import input.InputDataConsumer;
@@ -28,7 +23,6 @@ import org.apache.commons.cli.ParseException;
 
 import output.CsvOutputDataProducer;
 import output.OutputDataProducer;
-import output.Route;
 import output.Solution;
 import solver.SimulatedAnnealingAlgorithm;
 import solver.SimulatedAnnealingConfiguration;
@@ -66,19 +60,13 @@ public class Main {
 
         /* Read input data */
         Instance instance = createInstance(inputPath, driverFileName, orderFileName);
+        System.out.println("Instance created...");
 
         /* Run the algorithm */
         SimulatedAnnealingConfigurationBuilder configurationBuilder = new SimulatedAnnealingConfigurationBuilder();
         SimulatedAnnealingConfiguration configuration = configurationBuilder.build();
         SimulatedAnnealingAlgorithm algorithm = new SimulatedAnnealingAlgorithm(instance, configuration);
-        Solution solution = null;
-        try {
-            solution = algorithm.run();
-        } catch (UnserviceableOrderException | InfeasibleRouteException | InfeasibleSolutionException e) {
-            e.printStackTrace();
-        }
-
-        assert solution != null;
+        Solution solution = algorithm.run();
 
         /* Print the best solution */
         solution.printSolution();

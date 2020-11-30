@@ -7,11 +7,8 @@ import input.Instance;
 import output.Route;
 import output.Solution;
 import utilities.DistanceUtilities;
-import utilities.SearchUtilities;
 
-import javax.swing.*;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class ShawRemovalHeuristic implements RemovalHeuristic {
 
@@ -35,41 +32,33 @@ public class ShawRemovalHeuristic implements RemovalHeuristic {
 
     @Override
     public PartialSolution run(Solution solution) throws InfeasibleRouteException {
-
         Map<Integer, Integer> orderId2assignedDriverId = calculateOrderId2assignedDriverId(solution);
         List<Order> selectedOrders = new ArrayList<>();
         int numOrdersToRemove = this.getNumOrdersToRemove();
-
         Order firstOrderSelected = selectFirstOrderToRemove();
         selectedOrders.add(firstOrderSelected);
         numOrdersToRemove--;
-
         while (numOrdersToRemove > 0){
             Order nextOrderSelected = nextOrderToRemove(
                     selectedOrders, solution.getDriverId2route(), orderId2assignedDriverId);
             selectedOrders.add(nextOrderSelected);
             numOrdersToRemove--;
         }
-
         Map<Integer, Route> driverId2updatedRoute = new HashMap<>();
         for (Map.Entry<Integer, Route> entry : solution.getDriverId2route().entrySet())
             driverId2updatedRoute.put(entry.getKey(), new Route(entry.getValue()));
-
         for (Order order : selectedOrders){
             int assignedDriverId = orderId2assignedDriverId.get(order.getId());
             Route route = driverId2updatedRoute.get(assignedDriverId);
             route.remove(order.getId());
         }
-
         for (Map.Entry<Integer, Route> entry : driverId2updatedRoute.entrySet())
             entry.getValue().evaluate(this.getRouteCostFunction());
-
         return new PartialSolution(driverId2updatedRoute, selectedOrders);
     }
 
     @Override
     public void clear(){
-
     }
 
     @Override
@@ -86,12 +75,10 @@ public class ShawRemovalHeuristic implements RemovalHeuristic {
     private Order nextOrderToRemove(
             List<Order> selectedOrders, Map<Integer, Route> driverId2route,
             Map<Integer, Integer> orderId2assignedDriverId){
-
         List<Order> orders = this.getInstance().getOrders();
         int baseOrderIndex = random.nextInt(selectedOrders.size());
         Order baseOrder = selectedOrders.get(baseOrderIndex);
         Route routeOfBaseOrder = driverId2route.get(orderId2assignedDriverId.get(baseOrder.getId()));
-
         List<OrderSimilarity> orderSimilarities = new ArrayList<>();
         Map<Integer, Order> comparedOrderId2order = new HashMap<>();
         for (Order order : orders){
@@ -106,7 +93,8 @@ public class ShawRemovalHeuristic implements RemovalHeuristic {
             orderSimilarities.add(orderSimilarity);
         }
         Collections.sort(orderSimilarities);
-        int selectedIndex = (int) (Math.pow(random.nextDouble(), this.getRandomizationCoefficient()) *
+        double randomVariate = random.nextDouble();
+        int selectedIndex = (int) (Math.pow(randomVariate, this.getRandomizationCoefficient()) *
                 orderSimilarities.size());
         OrderSimilarity bestOrderSimilarity = orderSimilarities.get(selectedIndex);
         int nextOrderId = bestOrderSimilarity.getFirstOrderId() == baseOrder.getId() ?
@@ -116,7 +104,6 @@ public class ShawRemovalHeuristic implements RemovalHeuristic {
 
     private OrderSimilarity calculateOrderSimilarityValue(
             Order firstOrder, Order secondOrder, Route routeOfFirstOrder, Route routeOfSecondOrder){
-
         double differenceBetweenPickUpTimes = Math.abs(routeOfFirstOrder.getTaskCompletionTimes().get(
                 routeOfFirstOrder.getOrderId2pickupTaskIndex().get(firstOrder.getId())) -
                 routeOfSecondOrder.getTaskCompletionTimes().get(
@@ -131,7 +118,6 @@ public class ShawRemovalHeuristic implements RemovalHeuristic {
                 firstOrder.getDelivery().getLocation(), secondOrder.getDelivery().getLocation());
         double differenceBetweenLoads = Math.abs(
                 firstOrder.getPickup().getNumItems() - secondOrder.getPickup().getNumItems());
-
         OrderSimilarity orderSimilarity = new OrderSimilarity(
                 differenceBetweenDeliveryTimes, differenceBetweenLoads, differenceBetweenPickUpTimes,
                 distanceBetweenDeliveryTasks, distanceBetweenPickUpTasks, firstOrder.getId(), secondOrder.getId());

@@ -60,6 +60,109 @@ public class Route {
         this.travelTime = route.getTravelTime();
     }
 
+    public void evaluate(RouteCostFunction costFunction){
+        double cost = costFunction.calculateCost(this);
+        this.setCost(cost);
+    }
+
+    public void insert(Order order, OrderInsertion orderInsertion) throws
+            InfeasibleRouteException {
+        this.getTasks().add(orderInsertion.getPickUpTaskIndex(), order.getPickup());
+        this.getTasks().add(orderInsertion.getDeliveryTaskIndex(), order.getDelivery());
+        this.registerTasks();
+        this.schedule();
+    }
+
+    public void remove(int orderId) throws InfeasibleRouteException {
+        int pickUpTaskIndex = this.getOrderId2pickupTaskIndex().get(orderId);
+        int deliveryTaskIndex = this.getOrderId2deliveryTaskIndex().get(orderId);
+        this.getTasks().remove(pickUpTaskIndex);
+        // adjust the delivery task index
+        deliveryTaskIndex--;
+        this.getTasks().remove(deliveryTaskIndex);
+        this.registerTasks();
+        this.schedule();
+    }
+
+    private void registerTasks() throws InfeasibleRouteException {
+        Map<Integer, Integer> orderId2deliveryTaskIndex = new HashMap<>();
+        Map<Integer, Integer> orderId2pickupTaskIndex = new HashMap<>();
+        List<Integer> orderIds = new ArrayList<>();
+        List<Integer> driverLoads = new ArrayList<>();
+        int driverLoad = 0;
+        for (Task task : this.getTasks()) {
+            int orderId = task.getOrderId();
+            int taskIndex = tasks.indexOf(task);
+            driverLoad += task.getNumItems();
+            if (task.getType().equals(TaskType.PICKUP)) {
+                if (orderIds.contains(orderId))
+                    throw new InfeasibleRouteException(
+                            String.format("Order %s is served multiple times", orderId));
+                orderIds.add(orderId);
+                orderId2pickupTaskIndex.put(orderId, taskIndex);
+                if (driverLoad > this.getDriver().getCapacity())
+                    throw new InfeasibleRouteException(
+                            String.format("The driver capacity exceeded: Capacity: %d, " +
+                            "Load after picking up order %d is: %d", this.getDriver().getCapacity(), orderId,
+                            driverLoad));
+            }
+            else {
+                if (orderId2pickupTaskIndex.containsKey(orderId))
+                    orderId2deliveryTaskIndex.put(orderId, taskIndex);
+                else
+                    throw new InfeasibleRouteException(
+                            String.format("Order %d must be picked up before its delivery", orderId));
+            }
+            driverLoads.add(driverLoad);
+        }
+        this.setDriverLoads(driverLoads);
+        this.setOrderIds(orderIds);
+        this.setOrderId2pickupTaskIndex(orderId2pickupTaskIndex);
+        this.setOrderId2deliveryTaskIndex(orderId2deliveryTaskIndex);
+    }
+
+    private void schedule() throws InfeasibleRouteException {
+        Location startLocation = this.getDriver().getStartLocation();
+        int earliestStartTime = this.getDriver().getTimeWindow().getStart();
+        double totalDistanceTravelled = 0;
+        double totalTravelTime = 0;
+        List<Double> cumulativeDistances = new ArrayList<>();
+        List<Double> cumulativeTravelTimes = new ArrayList<>();
+        List<Double> taskCompletionTimes = new ArrayList<>();
+        Map<Integer, Double> lateDeliveredOrderId2delay = new HashMap<>();
+        double previousTaskCompletionTime = earliestStartTime;
+        Location previousLocation = new Location(startLocation);
+        for (Task task: this.getTasks()) {
+            int timeWindowStart = task.getTimeWindow().getStart();
+            int timeWindowEnd = task.getTimeWindow().getEnd();
+            double distance = DistanceUtilities.distanceInKm(previousLocation, task.getLocation());
+            totalDistanceTravelled += distance;
+            cumulativeDistances.add(totalDistanceTravelled);
+            double travelTime = TimeUtilities.travelTimeInSeconds(distance, Driver.AVERAGE_SPEED_IN_KM_PER_HOUR);
+            totalTravelTime += travelTime;
+            cumulativeTravelTimes.add(totalTravelTime);
+            double taskStartTime = previousTaskCompletionTime + travelTime < timeWindowStart ? timeWindowStart :
+                    previousTaskCompletionTime + travelTime;
+            double taskCompletionTime = taskStartTime + Task.SERVICE_TIME_IN_SECONDS;
+            taskCompletionTimes.add(taskCompletionTime);
+            if (task.getType().equals(TaskType.DELIVERY) & taskCompletionTime > timeWindowEnd)
+                lateDeliveredOrderId2delay.put(task.getOrderId(), taskCompletionTime - timeWindowEnd);
+            previousLocation = task.getLocation();
+            previousTaskCompletionTime = taskCompletionTime;
+        }
+        double lastTaskCompletionTime = taskCompletionTimes.size() > 0 ?
+                taskCompletionTimes.get(taskCompletionTimes.size() - 1) : Double.NEGATIVE_INFINITY;
+        if (lastTaskCompletionTime > this.getDriver().getTimeWindow().getEnd())
+            throw new InfeasibleRouteException(
+                    String.format("Time window of driver %d is violated", this.getDriver().getId()));
+        this.setCumulativeDistances(cumulativeDistances);
+        this.setCumulativeTravelTimes(cumulativeTravelTimes);
+        this.setDistanceTravelled(totalDistanceTravelled);
+        this.setTravelTime(totalTravelTime);
+        this.setTaskCompletionTimes(taskCompletionTimes);
+        this.setLateDeliveredOrderId2delay(lateDeliveredOrderId2delay);
+    }
+
     public double getCost() {
         return cost;
     }
@@ -162,104 +265,6 @@ public class Route {
 
     public void setTravelTime(double travelTime) {
         this.travelTime = travelTime;
-    }
-
-    public void evaluate(RouteCostFunction costFunction){
-        double cost = costFunction.calculateCost(this);
-        this.setCost(cost);
-    }
-
-    private void registerTasks() throws InfeasibleRouteException {
-        Map<Integer, Integer> orderId2deliveryTaskIndex = new HashMap<>();
-        Map<Integer, Integer> orderId2pickupTaskIndex = new HashMap<>();
-        List<Integer> orderIds = new ArrayList<>();
-        List<Integer> driverLoads = new ArrayList<>();
-        int driverLoad = 0;
-        for (Task task : this.getTasks()) {
-            int orderId = task.getOrderId();
-            int taskIndex = tasks.indexOf(task);
-            driverLoad += task.getNumItems();
-            if (task.getType().equals(TaskType.PICKUP)) {
-                if (orderIds.contains(orderId))
-                    throw new InfeasibleRouteException(
-                            String.format("Order %s is served multiple times", orderId));
-                orderIds.add(orderId);
-                orderId2pickupTaskIndex.put(orderId, taskIndex);
-                if (driverLoad > this.getDriver().getCapacity())
-                    throw new InfeasibleRouteException(
-                            String.format("The driver capacity exceeded: Capacity: %d, " +
-                            "Load after picking up order %d is: %d", this.getDriver().getCapacity(), orderId,
-                            driverLoad));
-            }
-            else {
-                if (orderId2pickupTaskIndex.containsKey(orderId))
-                    orderId2deliveryTaskIndex.put(orderId, taskIndex);
-                else
-                    throw new InfeasibleRouteException(
-                            String.format("Order %d must be picked up before its delivery", orderId));
-            }
-            driverLoads.add(driverLoad);
-        }
-        this.setDriverLoads(driverLoads);
-        this.setOrderIds(orderIds);
-        this.setOrderId2pickupTaskIndex(orderId2pickupTaskIndex);
-        this.setOrderId2deliveryTaskIndex(orderId2deliveryTaskIndex);
-    }
-
-    private void schedule(){
-        Location startLocation = this.getDriver().getStartLocation();
-        int earliestStartTime = this.getDriver().getTimeWindow().getStart();
-        double totalDistanceTravelled = 0;
-        double totalTravelTime = 0;
-        List<Double> cumulativeDistances = new ArrayList<>();
-        List<Double> cumulativeTravelTimes = new ArrayList<>();
-        List<Double> taskCompletionTimes = new ArrayList<>();
-        Map<Integer, Double> lateDeliveredOrderId2delay = new HashMap<>();
-        double previousTaskCompletionTime = earliestStartTime;
-        Location previousLocation = new Location(startLocation);
-        for (Task task: this.getTasks()) {
-            int timeWindowStart = task.getTimeWindow().getStart();
-            int timeWindowEnd = task.getTimeWindow().getEnd();
-            double distance = DistanceUtilities.distanceInKm(previousLocation, task.getLocation());
-            totalDistanceTravelled += distance;
-            cumulativeDistances.add(totalDistanceTravelled);
-            double travelTime = TimeUtilities.travelTimeInSeconds(distance, Driver.AVERAGE_SPEED_IN_KM_PER_HOUR);
-            totalTravelTime += travelTime;
-            cumulativeTravelTimes.add(totalTravelTime);
-            double taskStartTime = previousTaskCompletionTime + travelTime < timeWindowStart ? timeWindowStart :
-                    previousTaskCompletionTime + travelTime;
-            double taskCompletionTime = taskStartTime + Task.SERVICE_TIME_IN_SECONDS;
-            taskCompletionTimes.add(taskCompletionTime);
-            if (task.getType().equals(TaskType.DELIVERY) & taskCompletionTime > timeWindowEnd)
-                lateDeliveredOrderId2delay.put(task.getOrderId(), taskCompletionTime - timeWindowEnd);
-            previousLocation = task.getLocation();
-            previousTaskCompletionTime = taskCompletionTime;
-        }
-        this.setCumulativeDistances(cumulativeDistances);
-        this.setCumulativeTravelTimes(cumulativeTravelTimes);
-        this.setDistanceTravelled(totalDistanceTravelled);
-        this.setTravelTime(totalTravelTime);
-        this.setTaskCompletionTimes(taskCompletionTimes);
-        this.setLateDeliveredOrderId2delay(lateDeliveredOrderId2delay);
-    }
-
-    public void insert(Order order, OrderInsertion orderInsertion) throws
-            InfeasibleRouteException {
-        this.getTasks().add(orderInsertion.getPickUpTaskIndex(), order.getPickup());
-        this.getTasks().add(orderInsertion.getDeliveryTaskIndex(), order.getDelivery());
-        this.registerTasks();
-        this.schedule();
-    }
-
-    public void remove(int orderId) throws InfeasibleRouteException {
-        int pickUpTaskIndex = this.getOrderId2pickupTaskIndex().get(orderId);
-        int deliveryTaskIndex = this.getOrderId2deliveryTaskIndex().get(orderId);
-        this.getTasks().remove(pickUpTaskIndex);
-        // adjust the delivery task index
-        deliveryTaskIndex--;
-        this.getTasks().remove(deliveryTaskIndex);
-        this.registerTasks();
-        this.schedule();
     }
 
     @Override

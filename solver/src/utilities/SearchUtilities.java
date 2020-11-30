@@ -4,9 +4,8 @@ import algorithms.OrderInsertion;
 import algorithms.OrderInsertionImpact;
 import common.*;
 import exceptions.InfeasibleRouteException;
+import exceptions.UnserviceableOrderException;
 import output.Route;
-
-import java.util.*;
 
 public class SearchUtilities {
 
@@ -28,7 +27,7 @@ public class SearchUtilities {
     }
 
     public static OrderInsertionImpact findBestOrderInsertion(
-            Route route, Order order, RouteCostFunction costFunction){
+            Route route, Order order, RouteCostFunction costFunction) throws InfeasibleRouteException {
         int numTasks = route.getTasks().size();
         double minCostDelta = Double.POSITIVE_INFINITY;
         OrderInsertion bestOrderInsertion = null;
@@ -51,12 +50,12 @@ public class SearchUtilities {
                 }
             }
         }
+        if (bestRoute == null)
+            throw new InfeasibleRouteException(
+                    String.format(
+                            "Unable to find an insertion point for the order %d in the route of driver %d",
+                            order.getId(), route.getDriver().getId()));
         return new OrderInsertionImpact(minCostDelta, bestOrderInsertion, bestRoute);
-    }
-
-    public static boolean isCapacitySufficient(List<Integer> driverLoads, int numItems, int capacity){
-        int maxLoad = Collections.max(driverLoads);
-        return maxLoad + numItems <= capacity;
     }
 
 }

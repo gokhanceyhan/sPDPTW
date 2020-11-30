@@ -1,6 +1,5 @@
 package algorithms;
 
-import common.RouteCostFunction;
 import exceptions.InfeasibleRouteException;
 import output.Solution;
 

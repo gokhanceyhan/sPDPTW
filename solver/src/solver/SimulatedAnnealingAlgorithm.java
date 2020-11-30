@@ -5,9 +5,9 @@ import common.RouteCostFunction;
 import common.ScalingFunction;
 import exceptions.InfeasibleRouteException;
 import exceptions.InfeasibleSolutionException;
+import exceptions.NoSolutionException;
 import exceptions.UnserviceableOrderException;
 import input.Instance;
-import output.Route;
 import output.Solution;
 
 import java.util.*;
@@ -27,7 +27,6 @@ public class SimulatedAnnealingAlgorithm implements HeuristicAlgorithm {
     private OrderSimilarityFunction orderSimilarityFunction;
     private RouteCostFunction routeCostFunction;
 
-
     public SimulatedAnnealingAlgorithm(Instance instance, SimulatedAnnealingConfiguration configuration) {
         this.configuration = configuration;
         this.instance = instance;
@@ -36,19 +35,21 @@ public class SimulatedAnnealingAlgorithm implements HeuristicAlgorithm {
     }
 
     @Override
-    public Solution run() throws UnserviceableOrderException, InfeasibleRouteException,
-            InfeasibleSolutionException {
-        Solution solution = findInitialSolution();
+    public Solution run() throws NoSolutionException {
+        Solution solution;
+        try {
+            solution = findInitialSolution();
+        } catch (UnserviceableOrderException e) {
+            throw new NoSolutionException("cannot generate an initial solution");
+        }
+        System.out.println(String.format("Initial solution with cost %.2f: ", solution.getCost()));
         addSolution(solution);
         initializeAnnealingScheme(solution);
         this.setBestSolution(new Solution(solution));
         int iterationIndex = 1;
         while (iterationIndex < this.getConfiguration().getNumIterations()){
-            // System.out.println(String.format("Running iteration %d of the SA algorithm", iterationIndex));
             if (iterationIndex % this.getConfiguration().getSegmentSize() == 0){
-                System.out.println(String.format("Iteration %d: ", iterationIndex));
-                System.out.println(
-                        String.format("Current temperature %.2f", this.getAnnealingScheme().getCurrentTemperature()));
+                System.out.println(String.format("Running iteration %d...", iterationIndex));
                 this.getHeuristicManager().updateHeuristicWeights();
                 this.getHeuristicManager().clearHeuristicStatistics();
             }
@@ -57,17 +58,18 @@ public class SimulatedAnnealingAlgorithm implements HeuristicAlgorithm {
             LocalSearch localSearch = this.getLocalSearch();
             localSearch.setInsertionHeuristic(insertionHeuristic);
             localSearch.setRemovalHeuristic(removalHeuristic);
-            Solution candidateSolution = localSearch.run(solution);
+            Solution candidateSolution;
+            try {
+                candidateSolution = localSearch.run(solution);
+            } catch (UnserviceableOrderException | InfeasibleRouteException | InfeasibleSolutionException e) {
+                continue;
+            }
             LocalSearchResult localSearchResult = createLocalSearchResult(solution, candidateSolution);
             this.getHeuristicManager().updateHeuristicStatistics(localSearchResult);
             if (localSearchResult.isNewGlobalBestSolution()) {
                 this.setBestSolution(candidateSolution);
-                System.out.println(String.format("Iteration %d: ", iterationIndex));
                 System.out.println(String.format("New global best solution: %.2f", candidateSolution.getCost()));
-                solution = candidateSolution;
             }
-            if (localSearchResult.isLocallyImprovedSolution())
-                //System.out.println(String.format("New locally improved solution: %.2f", candidateSolution.getCost()));
             if (localSearchResult.isNewGlobalBestSolution() || localSearchResult.isLocallyImprovedSolution() ||
                     localSearchResult.isNewSolution())
                 addSolution(candidateSolution);
@@ -75,7 +77,6 @@ public class SimulatedAnnealingAlgorithm implements HeuristicAlgorithm {
             this.getAnnealingScheme().updateTemperature();
             iterationIndex ++;
         }
-        System.out.println(String.format("Ending temperature %.2f", this.getAnnealingScheme().getCurrentTemperature()));
         return this.getBestSolution();
     }
 
@@ -84,15 +85,13 @@ public class SimulatedAnnealingAlgorithm implements HeuristicAlgorithm {
     }
 
     private LocalSearchResult createLocalSearchResult(Solution currentSolution, Solution candidateSolution){
-        if (this.generatedSolutions.contains(candidateSolution))
-            return new LocalSearchResult(this.getLocalSearch().getInsertionHeuristic().getType(),
-                    this.getLocalSearch().getRemovalHeuristic().getType(), false,
-                    false, false);
-
         boolean newGlobalBestSolution = false;
         boolean locallyImprovedSolution = false;
         boolean newSolution = false;
-
+        if (this.generatedSolutions.contains(candidateSolution))
+            return new LocalSearchResult(this.getLocalSearch().getInsertionHeuristic().getType(),
+                    this.getLocalSearch().getRemovalHeuristic().getType(), newGlobalBestSolution,
+                    locallyImprovedSolution, newSolution);
         if (candidateSolution.getCost() < this.getBestSolution().getCost())
             newGlobalBestSolution = true;
         else if (candidateSolution.getCost() < currentSolution.getCost())
@@ -133,6 +132,8 @@ public class SimulatedAnnealingAlgorithm implements HeuristicAlgorithm {
     }
 
     private void initializeAnnealingScheme(Solution initialSolution){
+        // set the start temperature such that a solution begin 'w' worse than the initial solution has an acceptance
+        // probability of 'p'
         double w = 0.05;
         double p = 0.5;
         double startTemperature = w * initialSolution.getCost() / Math.log(1.0 / p);
@@ -169,7 +170,6 @@ public class SimulatedAnnealingAlgorithm implements HeuristicAlgorithm {
                         this.getInstance(), this.getConfiguration().getNumOrdersToRemove(),
                         this.getOrderSimilarityFunction(), this.getConfiguration().getRandomizationCoefficient(),
                         this.getRouteCostFunction()));
-
         HeuristicManager heuristicManager = new HeuristicManager(
                 insertionHeuristicType2heuristic, removalHeuristicType2heuristic,
                 this.getConfiguration().getReactionFactor(), this.getHeuristicScoringFunction());
@@ -190,8 +190,9 @@ public class SimulatedAnnealingAlgorithm implements HeuristicAlgorithm {
     }
 
     private void initializeOrderSimilarityFunction(){
-        ScalingFunction taskCompletionTimeDifferenceScalingFunction = new ScalingFunction(1e4, 0);
-        ScalingFunction taskDistanceScalingFunction = new ScalingFunction(100, 0);
+        // TO_DO: The scaling constants must be instance-specific
+        ScalingFunction taskCompletionTimeDifferenceScalingFunction = new ScalingFunction(2000, 0);
+        ScalingFunction taskDistanceScalingFunction = new ScalingFunction(10, 0);
         ScalingFunction taskLoadDifferenceScalingFunction = new ScalingFunction(20, 0);
         OrderSimilarityFunction orderSimilarityFunction = new OrderSimilarityFunction(
                 taskCompletionTimeDifferenceScalingFunction, taskDistanceScalingFunction,
@@ -281,5 +282,13 @@ public class SimulatedAnnealingAlgorithm implements HeuristicAlgorithm {
 
     public void setRouteCostFunction(RouteCostFunction routeCostFunction) {
         this.routeCostFunction = routeCostFunction;
+    }
+
+    public List<Solution> getGeneratedSolutions() {
+        return generatedSolutions;
+    }
+
+    public void setGeneratedSolutions(List<Solution> generatedSolutions) {
+        this.generatedSolutions = generatedSolutions;
     }
 }

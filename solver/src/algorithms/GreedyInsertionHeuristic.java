@@ -4,13 +4,13 @@ import common.Driver;
 import common.Order;
 import common.OrderIdAndDriverId;
 import common.RouteCostFunction;
+import exceptions.InfeasibleRouteException;
 import exceptions.UnserviceableOrderException;
 import input.Instance;
 import output.Route;
 import output.Solution;
 import utilities.SearchUtilities;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,13 +31,11 @@ public class GreedyInsertionHeuristic implements InsertionHeuristic {
 
     @Override
     public Solution run(PartialSolution partialSolution) throws UnserviceableOrderException {
-
         this.setPartialSolution(new PartialSolution(partialSolution));
         List<Order> pendingOrders = this.getPartialSolution().getPendingOrders();
         Map<Integer, Order> orderId2order = pendingOrders.stream().collect(
                 Collectors.toMap(Order::getId, order -> order));
         initializeOrderInsertionImpacts(pendingOrders, instance.getDrivers());
-
         while (pendingOrders.size() > 0){
             Map<Integer, OrderInsertionImpact> orderId2bestOrderInsertionImpact = new HashMap<>();
             for (Order order : pendingOrders){
@@ -79,7 +77,7 @@ public class GreedyInsertionHeuristic implements InsertionHeuristic {
                 minCostDelta = entry.getValue().getCostDelta();
             }
         }
-        assert bestOrderId != 1;
+        assert bestOrderId != -1;
         return bestOrderId;
     }
 
@@ -108,8 +106,13 @@ public class GreedyInsertionHeuristic implements InsertionHeuristic {
                 OrderIdAndDriverId orderIdAndDriverId = new OrderIdAndDriverId(driver.getId(), order.getId());
                 Route route = this.getPartialSolution().getDriverId2route().getOrDefault(
                         driver.getId(), new Route(driver));
-                OrderInsertionImpact orderInsertionImpact = SearchUtilities.findBestOrderInsertion(
-                        route, order, this.getRouteCostFunction());
+                OrderInsertionImpact orderInsertionImpact = null;
+                try {
+                    orderInsertionImpact = SearchUtilities.findBestOrderInsertion(
+                            route, order, this.getRouteCostFunction());
+                } catch (InfeasibleRouteException e) {
+                    continue;
+                }
                 orderIdAndDriverId2orderInsertionImpact.put(orderIdAndDriverId, orderInsertionImpact);
             }
         }
@@ -128,9 +131,14 @@ public class GreedyInsertionHeuristic implements InsertionHeuristic {
                 updatedOrderIdAndDriverId2orderInsertionImpact.put(entry.getKey(), entry.getValue());
                 continue;
             }
-            OrderInsertionImpact updatedOrderInsertionImpact = SearchUtilities.findBestOrderInsertion(
-                    this.getPartialSolution().getDriverId2route().get(driverId), orderId2order.get(orderId),
-                    this.getRouteCostFunction());
+            OrderInsertionImpact updatedOrderInsertionImpact = null;
+            try {
+                updatedOrderInsertionImpact = SearchUtilities.findBestOrderInsertion(
+                        this.getPartialSolution().getDriverId2route().get(driverId), orderId2order.get(orderId),
+                        this.getRouteCostFunction());
+            } catch (InfeasibleRouteException e) {
+                continue;
+            }
             updatedOrderIdAndDriverId2orderInsertionImpact.put(entry.getKey(), updatedOrderInsertionImpact);
         }
         this.setOrderIdAndDriverId2orderInsertionImpact(updatedOrderIdAndDriverId2orderInsertionImpact);

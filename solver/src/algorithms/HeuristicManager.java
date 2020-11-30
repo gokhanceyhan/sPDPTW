@@ -1,6 +1,5 @@
 package algorithms;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -35,19 +34,16 @@ public class HeuristicManager {
         InsertionHeuristicType[] types = new InsertionHeuristicType[numHeuristics];
         double[] weights = new double[numHeuristics];
         double[] cumulativeProbabilities = new double[numHeuristics];
-
         int index = 0;
         for (Map.Entry<InsertionHeuristicType, Double> entry: this.getInsertionHeuristicType2weight().entrySet()){
             types[index] = entry.getKey();
             weights[index] = entry.getValue();
             index++;
         }
-
         double totalWeight = 0.0;
         for (double weight : weights) {
             totalWeight += weight;
         }
-
         index = 0;
         double cumulativeProbability = 0.0;
         for (double weight : weights) {
@@ -56,7 +52,6 @@ public class HeuristicManager {
             cumulativeProbabilities[index] = cumulativeProbability;
             index++;
         }
-
         double randomVariate = random.nextDouble();
         InsertionHeuristicType selectedHeuristicType = null;
         for (int i = 0; i < cumulativeProbabilities.length ; i++) {
@@ -73,19 +68,16 @@ public class HeuristicManager {
         RemovalHeuristicType[] types = new RemovalHeuristicType[numHeuristics];
         double[] weights = new double[numHeuristics];
         double[] cumulativeProbabilities = new double[numHeuristics];
-
         int index = 0;
         for (Map.Entry<RemovalHeuristicType, Double> entry: this.getRemovalHeuristicType2weight().entrySet()){
             types[index] = entry.getKey();
             weights[index] = entry.getValue();
             index++;
         }
-
         double totalWeight = 0.0;
         for (double weight : weights) {
             totalWeight += weight;
         }
-
         index = 0;
         double cumulativeProbability = 0.0;
         for (double weight : weights) {
@@ -94,7 +86,6 @@ public class HeuristicManager {
             cumulativeProbabilities[index] = cumulativeProbability;
             index++;
         }
-
         double randomVariate = random.nextDouble();
         RemovalHeuristicType selectedHeuristicType = null;
         for (int i = 0; i < cumulativeProbabilities.length ; i++) {
@@ -145,7 +136,6 @@ public class HeuristicManager {
     }
 
     public void updateHeuristicWeights(){
-
         Map<InsertionHeuristicType, Double> updatedInsertionHeuristicType2weight = new HashMap<>();
         for (Map.Entry<InsertionHeuristicType, Double> entry: this.getInsertionHeuristicType2weight().entrySet()){
             InsertionHeuristicType heuristicType = entry.getKey();
@@ -158,7 +148,6 @@ public class HeuristicManager {
             updatedInsertionHeuristicType2weight.put(heuristicType, updatedWeight);
         }
         this.setInsertionHeuristicType2weight(updatedInsertionHeuristicType2weight);
-
         Map<RemovalHeuristicType, Double> updatedRemovalHeuristicType2weight = new HashMap<>();
         for (Map.Entry<RemovalHeuristicType, Double> entry: this.getRemovalHeuristicType2weight().entrySet()){
             RemovalHeuristicType heuristicType = entry.getKey();
@@ -181,7 +170,6 @@ public class HeuristicManager {
 
         double insertionHeuristicWeight = (double) 1 / numInsertionHeuristics;
         double removalHeuristicWeight = (double) 1 / numRemovalHeuristics;
-
         Map<InsertionHeuristicType, HeuristicStatistics> insertionHeuristicType2statistics = new HashMap<>();
         Map<InsertionHeuristicType, Double> insertionHeuristicType2weight = new HashMap<>();
         Map<RemovalHeuristicType, HeuristicStatistics> removalHeuristicType2statistics = new HashMap<>();
@@ -195,7 +183,6 @@ public class HeuristicManager {
             removalHeuristicType2statistics.put(removalHeuristicType, new HeuristicStatistics());
             removalHeuristicType2weight.put(removalHeuristicType, removalHeuristicWeight);
         }
-
         this.setInsertionHeuristicType2statistics(insertionHeuristicType2statistics);
         this.setInsertionHeuristicType2weight(insertionHeuristicType2weight);
         this.setRemovalHeuristicType2statistics(removalHeuristicType2statistics);

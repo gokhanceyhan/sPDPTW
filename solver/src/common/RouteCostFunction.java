@@ -2,8 +2,6 @@ package common;
 
 import output.Route;
 
-import java.util.Collections;
-
 public class RouteCostFunction {
 
     private double distanceTravelledCostWeight;
@@ -11,8 +9,9 @@ public class RouteCostFunction {
     private double totalDeliveryDelayCostWeight;
     private double travelTimeCostWeight;
 
-    public RouteCostFunction(double distanceTravelledCostWeight, double numLateDeliveriesCostWeight,
-                             double totalDeliveryDelayCostWeight, double travelTimeCostWeight) {
+    public RouteCostFunction(
+            double distanceTravelledCostWeight, double numLateDeliveriesCostWeight,
+            double totalDeliveryDelayCostWeight, double travelTimeCostWeight) {
         this.distanceTravelledCostWeight = distanceTravelledCostWeight;
         this.numLateDeliveriesCostWeight = numLateDeliveriesCostWeight;
         this.totalDeliveryDelayCostWeight = totalDeliveryDelayCostWeight;
@@ -21,13 +20,15 @@ public class RouteCostFunction {
 
     public double calculateCost(Route route){
         int numLateDeliveries = route.getLateDeliveredOrderId2delay().size();
-        double totalDeliveryDelay = route.getLateDeliveredOrderId2delay().values().stream().reduce(
-                0.0, Double::sum);
+        double totalDeliveryDelay = 0.0;
+        for (double delay : route.getLateDeliveredOrderId2delay().values())
+            totalDeliveryDelay += delay;
         double travelTime = route.getTravelTime();
         double distanceTravelled = route.getDistanceTravelled();
         return numLateDeliveries * this.getNumLateDeliveriesCostWeight() +
                 totalDeliveryDelay * this.getTotalDeliveryDelayCostWeight() +
-                travelTime * this.getTravelTimeCostWeight() + distanceTravelled * this.getDistanceTravelledCostWeight();
+                travelTime * this.getTravelTimeCostWeight() +
+                distanceTravelled * this.getDistanceTravelledCostWeight();
     }
 
     public double getDistanceTravelledCostWeight() {

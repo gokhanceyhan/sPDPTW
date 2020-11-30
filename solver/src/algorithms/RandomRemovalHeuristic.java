@@ -3,7 +3,6 @@ package algorithms;
 import common.Order;
 import common.RouteCostFunction;
 import exceptions.InfeasibleRouteException;
-import exceptions.InvalidInputException;
 import input.Instance;
 import output.Route;
 import output.Solution;
@@ -45,7 +44,6 @@ public class RandomRemovalHeuristic implements RemovalHeuristic {
 
     @Override
     public void clear() {
-
     }
 
     @Override

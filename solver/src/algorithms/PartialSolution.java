@@ -4,7 +4,6 @@ import common.Order;
 import exceptions.InfeasibleSolutionException;
 import input.Instance;
 import output.Route;
-import output.Solution;
 
 import java.util.ArrayList;
 import java.util.HashMap;

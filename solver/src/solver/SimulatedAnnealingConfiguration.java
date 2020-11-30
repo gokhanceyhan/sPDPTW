@@ -1,7 +1,6 @@
 package solver;
 
 import algorithms.InsertionHeuristicType;
-import common.ScalingFunction;
 
 public class SimulatedAnnealingConfiguration {
 

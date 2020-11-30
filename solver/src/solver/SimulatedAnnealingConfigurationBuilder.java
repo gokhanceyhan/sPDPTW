@@ -30,10 +30,10 @@ public class SimulatedAnnealingConfigurationBuilder {
     private double travelTimeCostWeight;
 
     public SimulatedAnnealingConfigurationBuilder() {
-        this.coolingRate = 0.99975;
+        this.coolingRate = 0.99;
         this.constructionHeuristicType = InsertionHeuristicType.REGRET_BASED_INSERTION;
-        this.numIterations = 25000;
-        this.numOrdersToRemove = 20;
+        this.numIterations = 1000;
+        this.numOrdersToRemove = 10;
         this.randomizationCoefficient = 3;
         this.reactionFactor = 0.1;
         this.regretHorizon = 4;
@@ -42,8 +42,8 @@ public class SimulatedAnnealingConfigurationBuilder {
         this.orderSimilarityTaskDistanceCoefficient = 9;
         this.orderSimilarityTaskLoadCoefficient = 2;
         this.rewardForNewGlobalBestSolution = 33;
-        this.rewardForLocallyImprovedSolution = 9;
-        this.rewardForAcceptedSolution = 13; // why larger than the above?
+        this.rewardForLocallyImprovedSolution = 13;
+        this.rewardForAcceptedSolution = 9;
         this.distanceTravelledCostWeight = 1;
         this.numLateDeliveriesCostWeight = 1e6;
         this.totalDeliveryDelayCostWeight = 1e3;
