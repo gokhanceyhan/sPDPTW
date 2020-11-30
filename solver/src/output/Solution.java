@@ -5,7 +5,6 @@ import exceptions.InfeasibleSolutionException;
 import input.Instance;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class Solution {
 
@@ -29,12 +28,17 @@ public class Solution {
         this.driverId2route = driverId2route;
     }
 
+    public void evaluate(){
+        double initialCost = 0.0;
+        double cost = this.getDriverId2route().values().stream().map(Route::getCost).reduce(initialCost, Double:: sum);
+        this.setCost(cost);
+    }
+
     public void printSolution(){
         int numLateDeliveries = 0;
         List<Integer> lateDeliveredOrderIds = new ArrayList<>();
         List<Long> delays = new ArrayList<>();
         double totalDelay = 0.0;
-
         for (Map.Entry<Integer, Route> routeEntry: this.getDriverId2route().entrySet()){
             Route route = routeEntry.getValue();
             numLateDeliveries += route.getLateDeliveredOrderId2delay().size();
@@ -44,12 +48,10 @@ public class Solution {
                 totalDelay += orderEntry.getValue();
             }
         }
-
         double totalDistanceTravelled = 0.0;
         double maxDistanceTravelled = 0.0;
         double totalTravelTime = 0.0;
         double maxTravelTime = 0.0;
-
         for (Map.Entry<Integer, Route> routeEntry: this.getDriverId2route().entrySet()){
             Route route = routeEntry.getValue();
             double distanceTravelled = route.getDistanceTravelled();
@@ -61,7 +63,6 @@ public class Solution {
             if (travelTime > maxTravelTime)
                 maxTravelTime = travelTime;
         }
-
         System.out.println(String.format("Cost: %.2f", this.getCost()));
         System.out.println(String.format("Number of late deliveries: %d", numLateDeliveries));
         System.out.println(String.format("Total delay (secs): %.2f", totalDelay));
@@ -71,33 +72,6 @@ public class Solution {
         System.out.println(String.format("Max distance: %.2f", maxDistanceTravelled));
         System.out.println(String.format("Total travel time (secs): %.2f", totalTravelTime));
         System.out.println(String.format("Max travel time (secs): %.2f", maxTravelTime));
-
-    }
-
-    public double getCost() {
-        return cost;
-    }
-
-    public void setCost(double cost) {
-        this.cost = cost;
-    }
-
-    public Map<Integer, Route> getDriverId2route() {
-        return driverId2route;
-    }
-
-    public void setDriverId2route(Map<Integer, Route> driverId2route) {
-        this.driverId2route = driverId2route;
-    }
-
-    public void updateRoute(int driverId, Route route){
-        this.getDriverId2route().put(driverId, route);
-    }
-
-    public void evaluate(){
-        double initialCost = 0.0;
-        double cost = this.getDriverId2route().values().stream().map(Route::getCost).reduce(initialCost, Double:: sum);
-        this.setCost(cost);
     }
 
     public void validate(Instance instance) throws InfeasibleSolutionException {
@@ -122,6 +96,26 @@ public class Solution {
                 message = message.concat(String.format("%d ", orderId));
             throw new InfeasibleSolutionException(message);
         }
+    }
+
+    public double getCost() {
+        return cost;
+    }
+
+    public void setCost(double cost) {
+        this.cost = cost;
+    }
+
+    public Map<Integer, Route> getDriverId2route() {
+        return driverId2route;
+    }
+
+    public void setDriverId2route(Map<Integer, Route> driverId2route) {
+        this.driverId2route = driverId2route;
+    }
+
+    public void updateRoute(int driverId, Route route){
+        this.getDriverId2route().put(driverId, route);
     }
 
     @Override

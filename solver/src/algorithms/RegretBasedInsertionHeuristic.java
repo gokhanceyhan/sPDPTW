@@ -3,6 +3,7 @@ package algorithms;
 import common.Driver;
 import common.Order;
 import common.RouteCostFunction;
+import exceptions.InfeasibleRouteException;
 import exceptions.UnserviceableOrderException;
 import input.Instance;
 import output.Route;
@@ -14,7 +15,6 @@ import java.util.stream.Collectors;
 
 public class RegretBasedInsertionHeuristic implements InsertionHeuristic {
 
-    // Each order insertion impact represents the best insertion to the route of a different driver
     private Instance instance;
     private Map<Integer, List<OrderInsertionImpact>> orderId2bestOrderInsertionImpacts;
     private Map<Integer, List<OrderInsertionImpact>> orderId2candidateOrderInsertionImpacts;
@@ -33,13 +33,11 @@ public class RegretBasedInsertionHeuristic implements InsertionHeuristic {
 
     @Override
     public Solution run(PartialSolution partialSolution) throws UnserviceableOrderException {
-
         this.setPartialSolution(new PartialSolution(partialSolution));
         List<Order> pendingOrders = this.getPartialSolution().getPendingOrders();
         Map<Integer, Order> orderId2order = pendingOrders.stream().collect(
                 Collectors.toMap(Order::getId, order -> order));
         initializeOrderInsertionImpacts(pendingOrders, instance.getDrivers());
-
         while (pendingOrders.size() > 0){
             Map<Integer, Double> orderId2regret = new HashMap<>();
             for (Order order : pendingOrders){
@@ -125,8 +123,13 @@ public class RegretBasedInsertionHeuristic implements InsertionHeuristic {
             for (Driver driver: drivers){
                 Route route = this.getPartialSolution().getDriverId2route().getOrDefault(
                         driver.getId(), new Route(driver));
-                OrderInsertionImpact orderInsertionImpact = SearchUtilities.findBestOrderInsertion(
-                        route, order, this.getRouteCostFunction());
+                OrderInsertionImpact orderInsertionImpact;
+                try {
+                    orderInsertionImpact = SearchUtilities.findBestOrderInsertion(
+                            route, order, this.getRouteCostFunction());
+                } catch (InfeasibleRouteException e) {
+                    continue;
+                }
                 if (bestOrderInsertionImpacts.size() < this.getRegretHorizon()) {
                     bestOrderInsertionImpacts.add(orderInsertionImpact);
                     if (orderInsertionImpact.getCostDelta() > maxCostDeltas.peek()) {
@@ -181,8 +184,12 @@ public class RegretBasedInsertionHeuristic implements InsertionHeuristic {
                     updatedOrderInsertionImpact = orderInsertionImpact;
                 else {
                     Route route = this.getPartialSolution().getDriverId2route().get(driverId);
-                    updatedOrderInsertionImpact = SearchUtilities.findBestOrderInsertion(
-                            route, orderId2order.get(orderId), this.getRouteCostFunction());
+                    try {
+                        updatedOrderInsertionImpact = SearchUtilities.findBestOrderInsertion(
+                                route, orderId2order.get(orderId), this.getRouteCostFunction());
+                    } catch (InfeasibleRouteException e) {
+                        continue;
+                    }
                 }
                 updatedBestOrderInsertionImpacts.add(updatedOrderInsertionImpact);
                 if (updatedOrderInsertionImpact.getCostDelta() > maxCostDeltas.peek()) {
@@ -201,8 +208,12 @@ public class RegretBasedInsertionHeuristic implements InsertionHeuristic {
                     updatedOrderInsertionImpact = orderInsertionImpact;
                 else{
                     Route route = this.getPartialSolution().getDriverId2route().get(driverId);
-                    updatedOrderInsertionImpact = SearchUtilities.findBestOrderInsertion(
-                            route, orderId2order.get(orderId), this.getRouteCostFunction());
+                    try {
+                        updatedOrderInsertionImpact = SearchUtilities.findBestOrderInsertion(
+                                route, orderId2order.get(orderId), this.getRouteCostFunction());
+                    } catch (InfeasibleRouteException e) {
+                        continue;
+                    }
                 }
                 updatedCandidateOrderInsertionImpacts.add(updatedOrderInsertionImpact);
                 if (updatedOrderInsertionImpact.getCostDelta() < maxCostDeltas.peek()){

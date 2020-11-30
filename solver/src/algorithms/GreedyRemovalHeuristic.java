@@ -1,8 +1,6 @@
 package algorithms;
 
-import common.Driver;
 import common.Order;
-import common.OrderIdAndDriverId;
 import common.RouteCostFunction;
 import exceptions.InfeasibleRouteException;
 import input.Instance;
@@ -40,7 +38,6 @@ public class GreedyRemovalHeuristic implements RemovalHeuristic {
                 Collectors.toMap(Order::getId, order -> order));
         List<Order> pendingOrders = new ArrayList<>();
         this.setPartialSolution(new PartialSolution(solution.getDriverId2route(), pendingOrders));
-
         initializeOrderRemovalImpacts();
         int numOrdersToRemove = this.getNumOrdersToRemove();
         while (numOrdersToRemove > 0){
@@ -71,7 +68,6 @@ public class GreedyRemovalHeuristic implements RemovalHeuristic {
 
     private void updateOrderRemovalImpacts(int lastRemovedOrderId, int lastUpdatedDriverId) throws
             InfeasibleRouteException {
-
         Map<Integer, OrderRemovalImpact> updatedOrderId2orderRemovalImpact = new HashMap<>();
         for (Map.Entry<Integer, OrderRemovalImpact> entry : this.getOrderId2orderRemovalImpact().entrySet()){
             int orderId = entry.getKey();
@@ -98,11 +94,10 @@ public class GreedyRemovalHeuristic implements RemovalHeuristic {
         Collections.sort(orderRemovalImpacts);
         int selectedIndex = (int) (Math.pow(random.nextDouble(), this.getRandomizationCoefficient()) *
                 orderRemovalImpacts.size());
-        return orderRemovalImpacts.get(0).getOrderId();
+        return orderRemovalImpacts.get(selectedIndex).getOrderId();
     }
 
     private void initializeOrderRemovalImpacts() throws InfeasibleRouteException {
-
         Map<Integer, OrderRemovalImpact> orderId2orderRemovalImpact = new HashMap<>();
         for (Map.Entry<Integer, Route> entry : this.getPartialSolution().getDriverId2route().entrySet()){
             int driverId = entry.getKey();

@@ -5,15 +5,10 @@ package main;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
-import algorithms.*;
 import common.Driver;
 import common.Order;
-import common.RouteCostFunction;
-import common.ScalingFunction;
 import exceptions.*;
 import input.CsvInputDataConsumer;
 import input.InputDataConsumer;
@@ -28,7 +23,6 @@ import org.apache.commons.cli.ParseException;
 
 import output.CsvOutputDataProducer;
 import output.OutputDataProducer;
-import output.Route;
 import output.Solution;
 import solver.SimulatedAnnealingAlgorithm;
 import solver.SimulatedAnnealingConfiguration;
@@ -72,26 +66,10 @@ public class Main {
         SimulatedAnnealingConfigurationBuilder configurationBuilder = new SimulatedAnnealingConfigurationBuilder();
         SimulatedAnnealingConfiguration configuration = configurationBuilder.build();
         SimulatedAnnealingAlgorithm algorithm = new SimulatedAnnealingAlgorithm(instance, configuration);
-        Solution solution = null;
-
-        int numTrials = 0;
-        Solution bestSolution = null;
-        while (numTrials < 1){
-            try {
-                solution = algorithm.run();
-                solution.printSolution();
-            } catch (UnserviceableOrderException | InfeasibleRouteException | InfeasibleSolutionException e) {
-                e.printStackTrace();
-            }
-            if (bestSolution == null || solution.getCost() < bestSolution.getCost())
-                bestSolution = solution;
-            numTrials ++;
-        }
-
-        assert bestSolution != null;
+        Solution solution = algorithm.run();
 
         /* Print the best solution */
-        bestSolution.printSolution();
+        solution.printSolution();
 
         /* Generate the output file */
         String outputFilePath = inputPath + "results.csv";

@@ -92,7 +92,6 @@ public class OrderSimilarity implements Comparable<OrderSimilarity> {
         this.similarityValue = orderSimilarityFunction.calculateSimilarityValue(this);
     }
 
-
     @Override
     public int compareTo(OrderSimilarity o) {
         return Double.compare(this.getSimilarityValue(), o.getSimilarityValue());

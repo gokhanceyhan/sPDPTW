@@ -1,8 +1,7 @@
 package exceptions;
 
 /**
- * This exception is thrown when the data files include invalid entries like
- * null values, values from wrong data types or illogical values.
+ * This exception is thrown when the data files include invalid entries.
  *
  * @author gokhanceyhan
  *

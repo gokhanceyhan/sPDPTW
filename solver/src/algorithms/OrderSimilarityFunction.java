@@ -24,17 +24,18 @@ public class OrderSimilarityFunction {
     }
 
     public double calculateSimilarityValue(OrderSimilarity orderSimilarity){
-        double taskCompletionTimeTerm = this.getTaskCompletionTimeCoefficient() * (
+        double taskCompletionTimeTerm = this.getTaskCompletionTimeDifferenceScalingFunction().scale(
+                orderSimilarity.getDifferenceBetweenPickUpTimes()) +
                 this.getTaskCompletionTimeDifferenceScalingFunction().scale(
-                        orderSimilarity.getDifferenceBetweenPickUpTimes()) +
-                        this.getTaskCompletionTimeDifferenceScalingFunction().scale(
-                                orderSimilarity.getDifferenceBetweenDeliveryTimes()));
-        double taskDistanceTerm = this.getTaskDistanceCoefficient() * (
-                this.getTaskDistanceScalingFunction().scale(orderSimilarity.getDistanceBetweenPickUpTasks()) +
-                        this.getTaskDistanceScalingFunction().scale(orderSimilarity.getDistanceBetweenDeliveryTasks()));
-        double taskLoadTerm = this.getTaskLoadCoefficient() *
-                this.getTaskLoadDifferenceScalingFunction().scale(orderSimilarity.getDifferentBetweenLoads());
-        return taskCompletionTimeTerm + taskDistanceTerm + taskLoadTerm;
+                        orderSimilarity.getDifferenceBetweenDeliveryTimes());
+        double taskDistanceTerm = this.getTaskDistanceScalingFunction().scale(
+                orderSimilarity.getDistanceBetweenPickUpTasks()) +
+                this.getTaskDistanceScalingFunction().scale(orderSimilarity.getDistanceBetweenDeliveryTasks());
+        double taskLoadTerm = this.getTaskLoadDifferenceScalingFunction().scale(
+                orderSimilarity.getDifferentBetweenLoads());
+        return this.getTaskCompletionTimeCoefficient() * taskCompletionTimeTerm +
+                this.getTaskDistanceCoefficient() * taskDistanceTerm +
+                this.getTaskLoadCoefficient() * taskLoadTerm;
     }
 
     public double getTaskCompletionTimeCoefficient() {
